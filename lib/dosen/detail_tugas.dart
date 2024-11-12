@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'edit_tugas.dart';
+import 'package:kompen/dosen/ProfilePage.dart';
 
 class DetailTugasPage extends StatelessWidget {
   final Map<String, dynamic> tugas;
@@ -157,7 +158,7 @@ class DetailTugasPage extends StatelessWidget {
               IconButton(
                 icon: Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke halaman profil
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const Profilescreen()));
                 },
               ),
             ],

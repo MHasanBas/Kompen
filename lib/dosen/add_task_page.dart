@@ -256,7 +256,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
           elevation: 0,
           backgroundColor: Colors.transparent,
           onPressed: () {
-            // Tambah tugas logic
+             Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddTaskPage()),
+            );
           },
           child: Icon(
             Icons.add,

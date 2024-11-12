@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kompen/dosen/ProfilePage.dart';
 // import 'package:intl/intl.dart'; // Untuk format tanggal
 
 
@@ -298,7 +299,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
               IconButton(
                 icon: Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke halaman Profile
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const Profilescreen()));
                 },
               ),
             ],
