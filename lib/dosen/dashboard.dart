@@ -4,7 +4,8 @@ import 'models/task.dart';
 import 'lihat_tugas.dart';
 import 'task_approval_page.dart';
 import 'notifikasi.dart';
-import 'profilepage.dart';
+import 'package:kompen/dosen/Profile_Page.dart';
+import 'cek_tugas.dart';
 
 class HomeScreen extends StatelessWidget {
   final List<Task> tasks = [
@@ -14,7 +15,8 @@ class HomeScreen extends StatelessWidget {
     ),
     Task(
       title: 'Rekap Nilai',
-      description: 'Merekap nilai mahasiswa seluruh tingkat 3 menggunakan excel',
+      description:
+          'Merekap nilai mahasiswa seluruh tingkat 3 menggunakan excel',
     ),
   ];
 
@@ -204,7 +206,10 @@ class HomeScreen extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Action to home
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => HomeScreen()));
                 },
               ),
               IconButton(
@@ -212,9 +217,9 @@ class HomeScreen extends StatelessWidget {
                     color: Colors.white, size: 30),
                 onPressed: () {
                   Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => NotifikasiPage()),
-                  );
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => TaskApprovalPage()));
                 },
               ),
               const SizedBox(width: 50),
@@ -223,7 +228,9 @@ class HomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => TaskApprovalPage()),
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            const NotifikasiPage()), // Open NotifikasiPage
                   );
                 },
               ),
@@ -232,7 +239,8 @@ class HomeScreen extends StatelessWidget {
                 onPressed: () {
                   // Navigator.push(
                   //   context,
-                  //   MaterialPageRoute(builder: (context) => ProfilePage()),
+                  //   MaterialPageRoute(
+                  //       builder: (context) => const ProfilePage()), // Open ProfilePage
                   // );
                 },
               ),

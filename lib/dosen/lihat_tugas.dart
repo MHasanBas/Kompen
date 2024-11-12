@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'detail_tugas.dart';
+import 'dashboard.dart';
+import 'notifikasi.dart';
+import 'task_approval_page.dart'; // Import sesuai dengan nama file TaskApprovalPage
 
 class LihatTugasPage extends StatelessWidget {
   final List<Map<String, dynamic>> tugasList = [
@@ -23,11 +26,11 @@ class LihatTugasPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Suka Kompen.'),
+        title: const Text('Suka Kompen.'),
         backgroundColor: Colors.white,
         elevation: 0,
-        titleTextStyle: TextStyle(
-          color: Colors.blue.shade800,
+        titleTextStyle: const TextStyle(
+          color: Color.fromARGB(255, 10, 54, 105),
           fontSize: 24,
           fontWeight: FontWeight.bold,
         ),
@@ -45,7 +48,7 @@ class LihatTugasPage extends StatelessWidget {
                 color: Colors.grey.shade800,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
                 itemCount: tugasList.length,
@@ -62,17 +65,17 @@ class LihatTugasPage extends StatelessWidget {
                     },
                     child: Card(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                      margin: EdgeInsets.only(bottom: 16),
+                      margin: const EdgeInsets.only(bottom: 16),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.assignment,
                               size: 50,
                               color: Colors.blueAccent,
                             ),
-                            SizedBox(width: 16),
+                            const SizedBox(width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,24 +90,24 @@ class LihatTugasPage extends StatelessWidget {
                                   ),
                                   Text(
                                     'Dosen | ${tugas['dosen']}',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: const TextStyle(color: Colors.grey),
                                   ),
-                                  SizedBox(height: 4),
+                                  const SizedBox(height: 4),
                                   Text(
                                     tugas['description'],
                                     style: TextStyle(color: Colors.grey.shade600),
                                   ),
-                                  SizedBox(height: 4),
+                                  const SizedBox(height: 4),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         tugas['status'],
-                                        style: TextStyle(color: Colors.grey),
+                                        style: const TextStyle(color: Colors.grey),
                                       ),
                                       Text(
                                         tugas['deadline'],
-                                        style: TextStyle(color: Colors.red),
+                                        style: const TextStyle(color: Colors.red),
                                       ),
                                     ],
                                   ),
@@ -122,52 +125,75 @@ class LihatTugasPage extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Aksi untuk tombol scan QR
-        },
-        backgroundColor: Colors.blueAccent,
-        child: Icon(Icons.qr_code_scanner, size: 30),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        notchMargin: 8,
-        color: Colors.indigo[900],
-        child: Container(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 5,
+        color: const Color(0xFF191970),
+        child: SizedBox(
           height: 70,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               IconButton(
-                icon: Icon(Icons.home, color: Colors.white, size: 30),
+                icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke HomeScreen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
                 },
               ),
               IconButton(
-                icon: Icon(Icons.access_time, color: Colors.white, size: 30),
+                icon: const Icon(Icons.access_time, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke HistoryScreen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TaskApprovalPage()),
+                  );
                 },
               ),
-              SizedBox(width: 50),
+              const SizedBox(width: 50),
               IconButton(
-                icon: Icon(Icons.mail, color: Colors.white, size: 30),
+                icon: const Icon(Icons.mail, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke TaskApprovalPage
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NotifikasiPage()),
+                  );
                 },
               ),
               IconButton(
-                icon: Icon(Icons.person, color: Colors.white, size: 30),
+                icon: const Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke ProfilePage
+                  // Uncomment this line if ProfilePage is implemented
+                  // Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));
                 },
               ),
             ],
           ),
         ),
       ),
+      floatingActionButton: Container(
+        width: 90,
+        height: 90,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.blueAccent,
+        ),
+        child: FloatingActionButton(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          onPressed: () {
+            // Action when FAB is pressed
+          },
+          child: const Icon(
+            Icons.add,
+            size: 50,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }

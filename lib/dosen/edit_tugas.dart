@@ -24,11 +24,12 @@ class _AddTaskPageState extends State<AddTaskPage> {
   final TextEditingController _namaTugasController = TextEditingController();
   final TextEditingController _deskripsiTugasController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
-  String _jenisTugas = 'Offline';
-  String _bidangKompetensi = 'Teknis';
+  
+  String _tipeTugas = 'Online';
+  String _jenisTugas = 'Teknis';
+  String _bidangKompetensi = 'Web dev';
   String _bobotTugas = '5 Jam';
 
-  // Fungsi untuk menampilkan date picker
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -36,17 +37,18 @@ class _AddTaskPageState extends State<AddTaskPage> {
       firstDate: DateTime(2020),
       lastDate: DateTime(2101),
     );
-    if (pickedDate != null && pickedDate != _selectedDate)
+    if (pickedDate != null && pickedDate != _selectedDate) {
       setState(() {
         _selectedDate = pickedDate;
       });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Suka Kompen."),
+        title: Text("Suka Kompen"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -77,7 +79,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               SizedBox(height: 16),
 
-              // Bagian Unggah File (Mock, tidak memiliki fungsi unggah)
+              // Bagian Unggah File
               Text("Upload File"),
               Row(
                 children: [
@@ -105,9 +107,30 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               SizedBox(height: 16),
 
-              // Dropdown Jenis Tugas
+              // Baris Dropdown Tipe Tugas dan Jenis Tugas
               Row(
                 children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _tipeTugas,
+                      decoration: InputDecoration(
+                        labelText: "Tipe Tugas",
+                        border: OutlineInputBorder(),
+                      ),
+                      items: <String>['Online', 'Offline'].map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          _tipeTugas = newValue!;
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 16),
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: _jenisTugas,
@@ -115,8 +138,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         labelText: "Jenis Tugas",
                         border: OutlineInputBorder(),
                       ),
-                      items: <String>['Offline', 'Online']
-                          .map((String value) {
+                      items: <String>['Teknis', 'Pengabdian', 'Penelitian'].map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -129,9 +151,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       },
                     ),
                   ),
-                  SizedBox(width: 16),
+                ],
+              ),
+              SizedBox(height: 16),
 
-                  // Dropdown Bidang Kompetensi
+              // Baris Dropdown Bidang Kompetensi dan Bobot Tugas
+              Row(
+                children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: _bidangKompetensi,
@@ -139,8 +165,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         labelText: "Bidang Kompetensi",
                         border: OutlineInputBorder(),
                       ),
-                      items: <String>['Teknis', 'Non-Teknis']
-                          .map((String value) {
+                      items: <String>['Web dev', 'Data Science', 'AI'].map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -153,47 +178,39 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       },
                     ),
                   ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _bobotTugas,
+                      decoration: InputDecoration(
+                        labelText: "Bobot Tugas",
+                        border: OutlineInputBorder(),
+                      ),
+                      items: <String>['1 Jam', '3 Jam', '5 Jam'].map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          _bobotTugas = newValue!;
+                        });
+                      },
+                    ),
+                  ),
                 ],
-              ),
-              SizedBox(height: 16),
-
-              // Dropdown Bobot Tugas
-              DropdownButtonFormField<String>(
-                value: _bobotTugas,
-                decoration: InputDecoration(
-                  labelText: "Bobot Tugas",
-                  border: OutlineInputBorder(),
-                ),
-                items: <String>['1 Jam', '3 Jam', '5 Jam']
-                    .map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                onChanged: (newValue) {
-                  setState(() {
-                    _bobotTugas = newValue!;
-                  });
-                },
               ),
               SizedBox(height: 16),
 
               // Date Picker Tenggat Tugas
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: "Tenggat Tugas",
-                        border: OutlineInputBorder(),
-                        // hintText: DateFormat('dd/MM/yyyy').format(_selectedDate),
-                      ),
-                      onTap: () => _selectDate(context),
-                    ),
-                  ),
-                ],
+              TextFormField(
+                readOnly: true,
+                decoration: InputDecoration(
+                  labelText: "Tenggat Tugas",
+                  border: OutlineInputBorder(),
+                ),
+                onTap: () => _selectDate(context),
               ),
               SizedBox(height: 16),
 
@@ -203,7 +220,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        // Simpan tugas logic
                         print('Tugas disimpan: ${_namaTugasController.text}');
                       },
                       child: Text("Simpan Tugas"),
@@ -216,8 +232,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        // Batalkan tugas logic
-                        Navigator.pop(context); // Kembali ke halaman sebelumnya
+                        Navigator.pop(context);
                       },
                       child: Text("Batal"),
                       style: ElevatedButton.styleFrom(
@@ -243,7 +258,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
           elevation: 0,
           backgroundColor: Colors.transparent,
           onPressed: () {
-            // Fungsi untuk menambah tugas (jika diperlukan)
+            // Tambah tugas logic
           },
           child: Icon(
             Icons.add,
@@ -264,38 +279,26 @@ class _AddTaskPageState extends State<AddTaskPage> {
               IconButton(
                 icon: Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => HomePage()), // Ganti dengan halaman yang sesuai
-                  // );
+                  // Navigasi ke halaman Home
                 },
               ),
               IconButton(
                 icon: Icon(Icons.access_time, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => HistoryScreen()), // Ganti dengan halaman yang sesuai
-                  // );
+                  // Navigasi ke halaman History
                 },
               ),
-              SizedBox(width: 50), // Ruang kosong untuk tombol mengapung
+              SizedBox(width: 50),
               IconButton(
                 icon: Icon(Icons.mail, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => NotificationScreen()), // Ganti dengan halaman yang sesuai
-                  // );
+                  // Navigasi ke halaman Notifications
                 },
               ),
               IconButton(
                 icon: Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => ProfilePage()), // Ganti dengan halaman yang sesuai
-                  // );
+                  // Navigasi ke halaman Profile
                 },
               ),
             ],
