@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:kompen/dosen/ProfilePage.dart';
 import 'detail_tugas.dart';
 import 'dashboard.dart';
 import 'notifikasi.dart';
 import 'task_approval_page.dart'; // Import sesuai dengan nama file TaskApprovalPage
+import 'add_task_page.dart';
 
 class LihatTugasPage extends StatelessWidget {
   final List<Map<String, dynamic>> tugasList = [
@@ -165,8 +167,7 @@ class LihatTugasPage extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Uncomment this line if ProfilePage is implemented
-                  // Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfilePage()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const Profilescreen()));
                 },
               ),
             ],
@@ -184,7 +185,10 @@ class LihatTugasPage extends StatelessWidget {
           elevation: 0,
           backgroundColor: Colors.transparent,
           onPressed: () {
-            // Action when FAB is pressed
+             Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddTaskPage()),
+            );
           },
           child: const Icon(
             Icons.add,

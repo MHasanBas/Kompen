@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+<<<<<<< HEAD
 
 // Halaman untuk Dosen dan Mahasiswa
 import 'dosen/task_approval_page.dart';
@@ -17,11 +18,21 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController nimController = TextEditingController();
+=======
+import 'mahasiswa/home_page.dart' as mahasiswa;
+import 'dosen/dashboard.dart' as dosen;
+import 'tendik/dashboard.dart' as tendik;
+import 'register.dart';
+
+class LoginPage extends StatelessWidget {
+  final TextEditingController usernameController = TextEditingController();
+>>>>>>> e88278ae2dd2621af214d0f6444d1014219c1f7a
   final TextEditingController passwordController = TextEditingController();
 
   // API URLs
   final String url_domain = "http://192.168.1.7:8000/";
 
+<<<<<<< HEAD
   // Fungsi untuk login
   Future<void> login(BuildContext context) async {
     String nim = nimController.text;
@@ -75,6 +86,9 @@ class _LoginPageState extends State<LoginPage> {
 
   // Dialog untuk menampilkan hasil login
   void showLoginResultDialog(BuildContext context, String message, bool isSuccess) {
+=======
+  void showLoginResultDialog(BuildContext context, String message, bool isSuccess, String levelKode) {
+>>>>>>> e88278ae2dd2621af214d0f6444d1014219c1f7a
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -101,6 +115,33 @@ class _LoginPageState extends State<LoginPage> {
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop();
+<<<<<<< HEAD
+=======
+                  if (isSuccess) {
+                    // Cek level pengguna dan arahkan ke halaman yang sesuai
+                    if (levelKode == 'MHS') {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => mahasiswa.HomePage()),
+                      );
+                    } else if (levelKode == 'DSN') {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => dosen.HomeScreen()),
+                      );
+                    } else if (levelKode == 'TDK') {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => tendik.HomeScreen()),
+                      );
+                    } else {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      );
+                    }
+                  }
+>>>>>>> e88278ae2dd2621af214d0f6444d1014219c1f7a
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue[900],
@@ -118,6 +159,30 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+<<<<<<< HEAD
+=======
+  // Fungsi login ke API
+  Future<void> login(String username, String password, BuildContext context) async {
+    var url = 'http://192.168.69.40:8000/api/login'; // Ganti dengan URL API yang sesuai
+    var response = await http.post(Uri.parse(url), body: {
+      'username': username, 
+      'password': password,
+    });
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      // Pastikan data level ada dalam respons
+      String levelKode = data['user']['level_kode']; // Ambil level_kode
+      showLoginResultDialog(context, 'Selamat datang, ${data['user']['nama']}!', true, levelKode);
+    } else {
+      var data = jsonDecode(response.body);
+      showLoginResultDialog(context, 'Username atau password salah', false, '');
+      usernameController.clear();
+      passwordController.clear();
+    }
+  }
+
+>>>>>>> e88278ae2dd2621af214d0f6444d1014219c1f7a
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,9 +230,9 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: TextField(
-                      controller: nimController,
+                      controller: usernameController,
                       decoration: const InputDecoration(
-                        hintText: "NIM/NIP",
+                        hintText: "Username", // Menggunakan username sebagai input
                         border: InputBorder.none,
                       ),
                       style: const TextStyle(fontSize: 18),
@@ -197,7 +262,7 @@ class _LoginPageState extends State<LoginPage> {
                   ElevatedButton(
                     onPressed: () {
                       FocusScope.of(context).unfocus();
-                      login(context);
+                      login(usernameController.text, passwordController.text, context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[900],
@@ -240,6 +305,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+<<<<<<< HEAD
 }
 
 class RegisterPage extends StatelessWidget {
@@ -370,3 +436,6 @@ class RegisterPage extends StatelessWidget {
     );
   }
 }
+=======
+}
+>>>>>>> e88278ae2dd2621af214d0f6444d1014219c1f7a

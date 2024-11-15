@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:google_fonts/google_fonts.dart';
+=======
+import 'package:kompen/dosen/ProfilePage.dart';
+>>>>>>> e88278ae2dd2621af214d0f6444d1014219c1f7a
 // import 'package:intl/intl.dart'; // Untuk format tanggal
 
 void main() {
@@ -307,7 +311,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
               IconButton(
                 icon: Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke halaman Profile
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const Profilescreen()));
                 },
               ),
             ],

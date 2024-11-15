@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kompen/dosen/add_task_page.dart';
+import 'dashboard.dart';
+import 'task_approval_page.dart';
+import 'notifikasi.dart';
 
-import 'notifikasi.dart'; //import file cek_tugas
 
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+class Profilescreen extends StatelessWidget {
+  const Profilescreen ({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +40,9 @@ class ProfilePage extends StatelessWidget {
                 color: const Color(0xFF001C72),
                 borderRadius: BorderRadius.circular(12.0),
               ),
-              child: const Column(
+              child: Column(
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 100.0,
                     backgroundColor: Colors.white,
                     child: Icon(
@@ -48,9 +51,9 @@ class ProfilePage extends StatelessWidget {
                       color: Color(0xFF001C72),
                     ),
                   ),
-                  SizedBox(height: 16.0),
-                  Text(
-                    "Hasan",
+                  const SizedBox(height: 16.0),
+                  const Text(
+                    "Septian Enggar",
                     style: TextStyle(
                       fontSize: 20.0,
                       fontWeight: FontWeight.bold,
@@ -58,8 +61,8 @@ class ProfilePage extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  Text(
-                    "2241760069",
+                  const Text(
+                    "198909012019031010",
                     style: TextStyle(
                       fontSize: 16.0,
                       color: Colors.white,
@@ -82,9 +85,9 @@ class ProfilePage extends StatelessWidget {
                 children: [
                   _buildInfoRow("Septian Enggar"),
                   _buildSeparator(),
-                  _buildInfoRow("19297323687"),
+                  _buildInfoRow("198909012019031010"),
                   _buildSeparator(),
-                  _buildInfoRow("Teknologi Informasi"),
+                  _buildInfoRow("Teknologi Informasi "),
                   _buildSeparator(),
                   _buildInfoRow("085876345109",
                       trailing: const Icon(Icons.edit)),
@@ -179,67 +182,84 @@ class ProfilePage extends StatelessWidget {
         ),
       ),
       // Bottom navbar
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 5,
-        color: Colors.indigo[900],
-        child: SizedBox(
+       bottomNavigationBar: BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        notchMargin: 8,
+        color: Colors.indigo[900], // Ubah warna bottom bar menjadi biru tua
+        child: Container(
           height: 70,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
+             IconButton(
+  icon: Icon(Icons.home, color: Colors.white, size: 30), // Warna icon putih dan ukuran lebih besar
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => HomeScreen()), // Sesuaikan dengan nama kelas 'HomePage'
+    );
+  },
+),
+
               IconButton(
-                icon: const Icon(Icons.home, color: Colors.white, size: 30),
+                icon: Icon(Icons.access_time, color: Colors.white, size: 30), // Warna icon putih dan ukuran lebih besar
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  // Arahkan ke halaman Histori
+              Navigator.push(
+  context,
+  MaterialPageRoute(builder: (context) => TaskApprovalPage()), // Sesuaikan dengan nama kelas yang benar
+);
+
                 },
               ),
+              SizedBox(width: 50), // Beri ruang lebih untuk tombol +
               IconButton(
-                icon: const Icon(Icons.access_time,
-                    color: Colors.white, size: 30),
-                onPressed: () {},
-              ),
-              const SizedBox(width: 50),
+  icon: Icon(Icons.mail, color: Colors.white, size: 30), // Warna icon putih dan ukuran lebih besar
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => NotifikasiPage()), // Sesuaikan dengan nama kelas 'NotificationScreen'
+    );
+  },
+),
+
               IconButton(
-                icon: const Icon(Icons.mail, color: Colors.white, size: 30),
+                icon: Icon(Icons.person, color: Colors.white, size: 30), // Warna icon putih dan ukuran lebih besar
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            NotifikasiPage()), //page cek tugas
-                  );
+                  // Aksi ke halaman profil
                 },
-              ),
-              IconButton(
-                icon: const Icon(Icons.person, color: Colors.white, size: 30),
-                onPressed: () {},
               ),
             ],
           ),
         ),
       ),
       floatingActionButton: Container(
-        width: 90,
-        height: 90,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.blueAccent,
+        width: 90, // Ukuran lingkaran FAB lebih besar
+        height: 90, // Tinggi lingkaran FAB lebih besar
+        decoration: BoxDecoration(
+          shape: BoxShape.circle, // Bentuk lingkaran penuh
+          color: Colors.blueAccent, // Warna biru lebih cerah
         ),
         child: FloatingActionButton(
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          onPressed: () {},
-          child: const Icon(
-            Icons.add,
-            size: 50,
-            color: Colors.white,
+          elevation: 0, // Hapus elevation agar rata dengan lingkaran
+          backgroundColor: Colors.transparent, // Jadikan background transparan agar tidak bertumpuk
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddTaskPage()),
+            );
+          },
+          child: Icon(
+            Icons.add, 
+            size: 50, // Ukuran icon + lebih besar dari icon biasa
+            color: Colors.white, // Warna putih agar kontras
           ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
+}
 
   Widget _buildInfoRow(String text, {Widget? trailing}) {
     return Padding(
@@ -267,4 +287,4 @@ class ProfilePage extends StatelessWidget {
       endIndent: 16,
     );
   }
-}
+
