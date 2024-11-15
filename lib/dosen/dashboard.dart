@@ -97,7 +97,7 @@ class HomeScreen extends StatelessWidget {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF191970),
                             ),
-                            child: const Text('Lihat Tugas'),
+                            child:Text('Lihat Tugas', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
                           ),
                         ],
                       ),
@@ -184,7 +184,7 @@ class HomeScreen extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.yellow[600],
                         ),
-                        child: const Text('Cek Request'),
+                        child: Text('Cek Request', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
                       ),
                     ),
                   ),

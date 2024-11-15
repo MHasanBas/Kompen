@@ -1,16 +1,79 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-import 'dosen/task_approval_page.dart'; // Import halaman dosen
+// Halaman untuk Dosen dan Mahasiswa
+import 'dosen/task_approval_page.dart';
 import 'dosen/dashboard.dart';
-import 'mahasiswa/home_page.dart' as mahasiswa; // Alias untuk halaman mahasiswa
+import 'mahasiswa/home_page.dart' as mahasiswa;
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController nimController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  LoginPage({super.key});
+  // API URLs
+  final String url_domain = "http://192.168.1.7:8000/";
 
+  // Fungsi untuk login
+  Future<void> login(BuildContext context) async {
+    String nim = nimController.text;
+    String password = passwordController.text;
+
+    if (nim.isEmpty || password.isEmpty) {
+      showLoginResultDialog(context, 'NIM/NIP dan Password tidak boleh kosong', false);
+      return;
+    }
+
+    // URL endpoint untuk login
+    final String loginUrl = "${url_domain}api/login"; 
+
+    try {
+      final response = await http.post(
+        Uri.parse(loginUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"nim": nim, "password": password}),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        bool isSuccess = responseData['success'];
+        String message = responseData['message'];
+
+        // Menampilkan dialog hasil login
+        showLoginResultDialog(context, message, isSuccess);
+
+        if (isSuccess) {
+          // Arahkan ke halaman sesuai role
+          if (responseData['role'] == 'dosen') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => HomeScreen()),
+            );
+          } else if (responseData['role'] == 'mahasiswa') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => mahasiswa.HomePage()),
+            );
+          }
+        }
+      } else {
+        showLoginResultDialog(context, 'Login gagal, coba lagi.', false);
+      }
+    } catch (e) {
+      print("Error: $e");
+      showLoginResultDialog(context, 'Terjadi kesalahan, coba lagi.', false);
+    }
+  }
+
+  // Dialog untuk menampilkan hasil login
   void showLoginResultDialog(BuildContext context, String message, bool isSuccess) {
     showDialog(
       context: context,
@@ -38,14 +101,6 @@ class LoginPage extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop();
-                  if (isSuccess) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => isSuccess ? HomeScreen() : mahasiswa.HomePage(),
-                      ),
-                    );
-                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue[900],
@@ -62,29 +117,6 @@ class LoginPage extends StatelessWidget {
       },
     );
   }
-
-void login(BuildContext context) {
-  String nim = nimController.text;
-  String password = passwordController.text;
-
-  if (nim == '12345' && password == 'password') {
-    showLoginResultDialog(context, 'Selamat datang, dosen!', true);
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
-    );
-  } else if (nim == '67890' && password == 'password') {
-    showLoginResultDialog(context, 'Selamat datang, mahasiswa!', true);
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => mahasiswa.HomePage()), // Menggunakan alias
-    );
-  } else {
-    showLoginResultDialog(context, 'NIM/NIP atau password salah', false);
-    nimController.clear();
-    passwordController.clear();
-  }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -315,7 +347,7 @@ class RegisterPage extends StatelessWidget {
                   const SizedBox(height: 40),
                   ElevatedButton(
                     onPressed: () {
-                      // Logika untuk register
+                      // Implement registration logic here
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[900],
@@ -327,27 +359,6 @@ class RegisterPage extends StatelessWidget {
                     child: const Text(
                       "Register",
                       style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => LoginPage(),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      "Sudah punya akun? Login",
-                      style: GoogleFonts.poppins(
-                        textStyle: TextStyle(
-                          fontSize: 16,
-                          color: Colors.blue[900],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                     ),
                   ),
                 ],

@@ -96,7 +96,7 @@ class DetailTugasPage extends StatelessWidget {
   },
   child: Text(
     'Edit Tugas',
-    style: GoogleFonts.poppins(fontSize: 14),
+    style: GoogleFonts.poppins(fontSize: 14, color: Colors.white,),
   ),
   style: ElevatedButton.styleFrom(
     backgroundColor: Color(0xFF6200EE),
@@ -110,7 +110,7 @@ class DetailTugasPage extends StatelessWidget {
                           },
                           child: Text(
                             'Hapus Tugas',
-                            style: GoogleFonts.poppins(fontSize: 14),
+                            style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey,
