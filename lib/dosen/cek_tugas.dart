@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dashboard.dart';
+import 'notifikasi.dart';
+import 'task_approval_page.dart';
 
 class CekTugasPage extends StatelessWidget {
   const CekTugasPage({super.key});
@@ -196,12 +198,16 @@ class CekTugasPage extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.access_time, color: Colors.white, size: 30),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => TaskApprovalPage()));
+                },
               ),
               const SizedBox(width: 50),
               IconButton(
                 icon: const Icon(Icons.mail, color: Colors.white, size: 30),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => NotifikasiPage()));
+                },
               ),
               IconButton(
                 icon: const Icon(Icons.person, color: Colors.white, size: 30),

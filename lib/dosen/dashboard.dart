@@ -4,7 +4,9 @@ import 'models/task.dart';
 import 'lihat_tugas.dart';
 import 'task_approval_page.dart';
 import 'notifikasi.dart';
-import 'profilepage.dart';
+import 'cek_tugas.dart';
+import 'ProfilePage.dart';
+import 'add_task_page.dart';
 
 class HomeScreen extends StatelessWidget {
   final List<Task> tasks = [
@@ -14,7 +16,8 @@ class HomeScreen extends StatelessWidget {
     ),
     Task(
       title: 'Rekap Nilai',
-      description: 'Merekap nilai mahasiswa seluruh tingkat 3 menggunakan excel',
+      description:
+          'Merekap nilai mahasiswa seluruh tingkat 3 menggunakan excel',
     ),
   ];
 
@@ -40,71 +43,89 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile section
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Padding(
+            Stack(
+              children: [
+                Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 35,
-                        backgroundColor: const Color(0xFF191970),
-                        child: const Icon(
-                          Icons.person,
-                          size: 40.0,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
                         children: [
-                          Text(
-                            'Faiz Abiyu',
-                            style: GoogleFonts.poppins(
-                              textStyle: const TextStyle(
-                                fontSize: 20.0,
-                                fontWeight: FontWeight.w700,
-                              ),
+                          CircleAvatar(
+                            radius: 35,
+                            backgroundColor: const Color(0xFF191970),
+                            child: const Icon(
+                              Icons.person,
+                              size: 40.0,
+                              color: Colors.white,
                             ),
                           ),
-                          Text(
-                            '21237880012',
-                            style: GoogleFonts.poppins(
-                              textStyle: const TextStyle(
-                                fontSize: 14.0,
-                                color: Colors.grey,
+                          const SizedBox(width: 16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Septian enggar',
+                                style: GoogleFonts.poppins(
+                                  textStyle: const TextStyle(
+                                    fontSize: 20.0,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => LihatTugasPage()),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF191970),
-                            ),
-                            child: const Text('Lihat Tugas'),
+                              Text(
+                                '21237880012',
+                                style: GoogleFonts.poppins(
+                                  textStyle: const TextStyle(
+                                    fontSize: 14.0,
+                                    color: Color.fromARGB(255, 87, 86, 86),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => LihatTugasPage()),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF191970),
+                                ),
+                                child: const Text(
+                                  'Lihat Tugas',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+                // Positioned widget untuk memindahkan tombol scan QR
+                Positioned(
+                  top: 30, // Atur lebih tinggi
+                  right: 30, // Atur ke kanan
+                  child: IconButton(
+                    icon: const Icon(Icons.qr_code_scanner),
+                    iconSize: 90.0,
+                    color: const Color(0xFF191970),
+                    onPressed: () {
+                      // Tambahkan logika untuk scan QR
+                    },
+                  ),
+                ),
+              ],
             ),
-            // Status section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
@@ -133,7 +154,6 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
-            // Request Tasks section
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
@@ -146,7 +166,6 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            // Task cards
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -177,12 +196,17 @@ class HomeScreen extends StatelessWidget {
                       subtitle: Text(tasks[index].description),
                       trailing: ElevatedButton(
                         onPressed: () {
-                          // Action when task is clicked
+                          // Action ketika request task ditekan
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.yellow[600],
                         ),
-                        child: const Text('Cek Request'),
+                        child: const Text(
+                          'Cek Request',
+                          style: TextStyle(
+                              color: Color.fromARGB(
+                                  255, 51, 50, 50)), // Ubah warna teks di sini
+                        ),
                       ),
                     ),
                   ),
@@ -204,7 +228,10 @@ class HomeScreen extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Action to home
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
                 },
               ),
               IconButton(
@@ -213,7 +240,7 @@ class HomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => NotifikasiPage()),
+                    MaterialPageRoute(builder: (context) => TaskApprovalPage()),
                   );
                 },
               ),
@@ -223,17 +250,19 @@ class HomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => TaskApprovalPage()),
+                    MaterialPageRoute(
+                        builder: (context) => const NotifikasiPage()),
                   );
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => ProfilePage()),
-                  // );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const Profilescreen()),
+                  );
                 },
               ),
             ],
@@ -251,7 +280,10 @@ class HomeScreen extends StatelessWidget {
           elevation: 0,
           backgroundColor: Colors.transparent,
           onPressed: () {
-            // Action when FAB is pressed
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddTaskPage()),
+            );
           },
           child: const Icon(
             Icons.add,

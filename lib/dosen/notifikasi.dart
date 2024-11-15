@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import 'ProfilePage.dart'; // Import ProfilePage
-import 'Cek_Tugas.dart'; // Import CekTugasPage
+import 'package:kompen/dosen/ProfilePage.dart';
+import 'package:kompen/dosen/task_approval_page.dart';
+import 'Cek_Tugas.dart'; 
+import 'add_task_page.dart';
 
 class NotifikasiPage extends StatelessWidget {
   const NotifikasiPage({super.key});
@@ -151,7 +152,10 @@ class NotifikasiPage extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.access_time,
                     color: Colors.white, size: 30),
-                onPressed: () {},
+                onPressed: () {
+
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => TaskApprovalPage()));
+                },
               ),
               const SizedBox(width: 50),
               IconButton(
@@ -171,7 +175,7 @@ class NotifikasiPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const ProfilePage()),
+                        builder: (context) => const Profilescreen()),
                   );
                 },
               ),
@@ -190,7 +194,10 @@ class NotifikasiPage extends StatelessWidget {
           elevation: 0,
           backgroundColor: Colors.transparent,
           onPressed: () {
-            // Action for FAB
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddTaskPage()),
+            );
           },
           child: const Icon(
             Icons.add,
