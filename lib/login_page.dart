@@ -1,102 +1,129 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:dio/dio.dart';
 import 'mahasiswa/home_page.dart' as mahasiswa;
 import 'dosen/dashboard.dart' as dosen;
 import 'tendik/dashboard.dart' as tendik;
 import 'register.dart';
 
-final dio = Dio();
-
-final TextEditingController usernameController = TextEditingController();
-final TextEditingController passwordController = TextEditingController();
-
-String url_domain = "http://192.168.18.30:8000";
-String url_login = url_domain + "/api/login";
-
 class LoginPage extends StatefulWidget {
-  LoginPage({super.key});
+  const LoginPage({super.key});
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  Future<void> login(BuildContext context) async {
-    // Tampilkan loading indicator
+  final Dio dio = Dio();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final String urlLogin = "http://192.168.122.83:8000/api/login";
+
+  @override
+  void dispose() {
+    usernameController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  void showLoginResultDialog(
+      BuildContext context, String message, bool isSuccess, String? levelId) {
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => Center(child: CircularProgressIndicator()),
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Text(
+            isSuccess ? 'Login Berhasil' : 'Login Gagal',
+            style: GoogleFonts.poppins(
+              textStyle: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: isSuccess ? Colors.green : Colors.red,
+              ),
+            ),
+          ),
+          content: Text(
+            message,
+            style: GoogleFonts.poppins(fontSize: 18),
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  if (isSuccess && levelId != null) {
+                    navigateToHome(levelId);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[900],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                ),
+                child: const Text('OK', style: TextStyle(color: Colors.white)),
+              ),
+            ),
+          ],
+        );
+      },
     );
+  }
 
-    try {
-      var response = await dio.post(
-        url_login,
-        data: {
-          'username': usernameController.text,
-          'password': passwordController.text,
-        },
+  void navigateToHome(String levelId) {
+    if (levelId == '4') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => mahasiswa.HomePage()),
       );
-
-      // Tutup dialog loading
-      Navigator.pop(context);
-
-      if (response.statusCode == 200) {
-        var data = response.data;
-
-        String levelKode = data['user']['level_kode'];
-        String nama = data['user']['nama'];
-
-        // Panggil halaman sesuai peran pengguna
-        navigateToDashboard(context, levelKode, nama);
-      } else {
-        // Tampilkan pesan error jika login gagal
-        showSnackbar(context, response.data['message'] ?? 'Login gagal');
-      }
-    } catch (e) {
-      // Tutup dialog loading dan tampilkan pesan error
-      Navigator.pop(context);
-      showSnackbar(context, 'Terjadi kesalahan: $e');
-    }
-  }
-
-  void navigateToDashboard(BuildContext context, String levelKode, String nama) {
-    String greetingMessage = "Selamat datang, $nama!";
-    Widget destination;
-
-    if (levelKode == 'MHS') {
-      destination = mahasiswa.HomePage();
-    } else if (levelKode == 'DSN') {
-      destination = dosen.HomeScreen();
-    } else if (levelKode == 'TDK') {
-      destination = tendik.HomeScreen();
+    } else if (levelId == '2') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => dosen.HomeScreen()),
+      );
+    } else if (levelId == '3') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => tendik.HomeScreen()),
+      );
     } else {
-      showSnackbar(context, 'Peran tidak dikenal');
-      return;
+      showLoginResultDialog(context, 'Level pengguna tidak dikenali.', false, null);
     }
-
-    // Tampilkan pesan sukses
-    showSnackbar(context, greetingMessage, isSuccess: true);
-
-    // Navigasikan ke halaman tujuan
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => destination),
-    );
   }
 
-  void showSnackbar(BuildContext context, String message, {bool isSuccess = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: GoogleFonts.poppins(fontSize: 16),
-        ),
-        backgroundColor: isSuccess ? Colors.green : Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  Future<void> login(String username, String password) async {
+    try {
+      final response = await dio.post(urlLogin, data: {
+        'username': username,
+        'password': password,
+      });
+
+      if (response.statusCode == 200 && response.data['user'] != null) {
+        final data = response.data;
+        final String? levelId = data['user']['level_id']?.toString();
+        final String userName = data['user']['nama'] ?? 'Pengguna';
+
+        if (levelId != null) {
+          showLoginResultDialog(context, 'Selamat datang, $userName!', true, levelId);
+        } else {
+          showLoginResultDialog(context, 'Level ID tidak ditemukan.', false, null);
+        }
+      } else {
+        showLoginResultDialog(context, 'Username atau password salah', false, null);
+      }
+    } on DioError catch (e) {
+      final errorMessage = e.response?.data['message'] ?? 'Terjadi kesalahan pada server.';
+      showLoginResultDialog(context, errorMessage, false, null);
+    } catch (e) {
+      showLoginResultDialog(context, 'Terjadi kesalahan. Silakan coba lagi.', false, null);
+    } finally {
+      usernameController.clear();
+      passwordController.clear();
+    }
   }
 
   @override
@@ -136,18 +163,23 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 30),
-                  buildTextField(usernameController, "Username"),
+                  buildTextField(
+                      controller: usernameController, hintText: "Username"),
                   const SizedBox(height: 20),
-                  buildTextField(passwordController, "Password", isPassword: true),
+                  buildTextField(
+                      controller: passwordController,
+                      hintText: "Password",
+                      isPassword: true),
                   const SizedBox(height: 40),
                   ElevatedButton(
                     onPressed: () {
                       FocusScope.of(context).unfocus();
-                      login(context);
+                      login(usernameController.text, passwordController.text);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[900],
-                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 50, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -159,12 +191,11 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 10),
                   TextButton(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => RegisterPage()),
-                      );
-                    },
+                        MaterialPageRoute(
+                          builder: (context) =>  RegisterPage(),
+                        )),
                     child: Text(
                       "Belum punya akun? Register",
                       style: GoogleFonts.poppins(
@@ -185,7 +216,10 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget buildTextField(TextEditingController controller, String hintText, {bool isPassword = false}) {
+  Widget buildTextField(
+      {required TextEditingController controller,
+      required String hintText,
+      bool isPassword = false}) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.0),
