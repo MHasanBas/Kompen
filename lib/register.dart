@@ -8,7 +8,6 @@ final dio = Dio();
 
 var all_data = [];
 
-final TextEditingController levelController = TextEditingController();
 final TextEditingController usernameController = TextEditingController();
 final TextEditingController namaController = TextEditingController();
 final TextEditingController passwordController = TextEditingController();

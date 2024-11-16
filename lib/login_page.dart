@@ -1,105 +1,102 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'mahasiswa/home_page.dart' as mahasiswa;
 import 'dosen/dashboard.dart' as dosen;
 import 'tendik/dashboard.dart' as tendik;
 import 'register.dart';
 
-class LoginPage extends StatelessWidget {
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+final dio = Dio();
 
+final TextEditingController usernameController = TextEditingController();
+final TextEditingController passwordController = TextEditingController();
+
+String url_domain = "http://192.168.18.30:8000";
+String url_login = url_domain + "/api/login";
+
+class LoginPage extends StatefulWidget {
   LoginPage({super.key});
 
-  void showLoginResultDialog(BuildContext context, String message, bool isSuccess, String levelKode) {
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  Future<void> login(BuildContext context) async {
+    // Tampilkan loading indicator
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          title: Text(
-            isSuccess ? 'Login Berhasil' : 'Login Gagal',
-            style: GoogleFonts.poppins(
-              textStyle: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: isSuccess ? Colors.green : Colors.red,
-              ),
-            ),
-          ),
-          content: Text(
-            message,
-            style: GoogleFonts.poppins(fontSize: 18),
-          ),
-          actions: [
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  if (isSuccess) {
-                    // Cek level pengguna dan arahkan ke halaman yang sesuai
-                    if (levelKode == 'MHS') {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => mahasiswa.HomePage()),
-                      );
-                    } else if (levelKode == 'DSN') {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => dosen.HomeScreen()),
-                      );
-                    } else if (levelKode == 'TDK') {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => tendik.HomeScreen()),
-                      );
-                    } else {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => LoginPage()),
-                      );
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[900],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
-                ),
-                child: const Text('OK', style: TextStyle(color: Colors.white)),
-              ),
-            ),
-          ],
-        );
-      },
+      barrierDismissible: false,
+      builder: (context) => Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      var response = await dio.post(
+        url_login,
+        data: {
+          'username': usernameController.text,
+          'password': passwordController.text,
+        },
+      );
+
+      // Tutup dialog loading
+      Navigator.pop(context);
+
+      if (response.statusCode == 200) {
+        var data = response.data;
+
+        String levelKode = data['user']['level_kode'];
+        String nama = data['user']['nama'];
+
+        // Panggil halaman sesuai peran pengguna
+        navigateToDashboard(context, levelKode, nama);
+      } else {
+        // Tampilkan pesan error jika login gagal
+        showSnackbar(context, response.data['message'] ?? 'Login gagal');
+      }
+    } catch (e) {
+      // Tutup dialog loading dan tampilkan pesan error
+      Navigator.pop(context);
+      showSnackbar(context, 'Terjadi kesalahan: $e');
+    }
+  }
+
+  void navigateToDashboard(BuildContext context, String levelKode, String nama) {
+    String greetingMessage = "Selamat datang, $nama!";
+    Widget destination;
+
+    if (levelKode == 'MHS') {
+      destination = mahasiswa.HomePage();
+    } else if (levelKode == 'DSN') {
+      destination = dosen.HomeScreen();
+    } else if (levelKode == 'TDK') {
+      destination = tendik.HomeScreen();
+    } else {
+      showSnackbar(context, 'Peran tidak dikenal');
+      return;
+    }
+
+    // Tampilkan pesan sukses
+    showSnackbar(context, greetingMessage, isSuccess: true);
+
+    // Navigasikan ke halaman tujuan
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => destination),
     );
   }
 
-  // Fungsi login ke API
-  Future<void> login(String username, String password, BuildContext context) async {
-    var url = 'http://192.168.69.40:8000/api/login'; // Ganti dengan URL API yang sesuai
-    var response = await http.post(Uri.parse(url), body: {
-      'username': username, 
-      'password': password,
-    });
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      // Pastikan data level ada dalam respons
-      String levelKode = data['user']['level_kode']; // Ambil level_kode
-      showLoginResultDialog(context, 'Selamat datang, ${data['user']['nama']}!', true, levelKode);
-    } else {
-      var data = jsonDecode(response.body);
-      showLoginResultDialog(context, 'Username atau password salah', false, '');
-      usernameController.clear();
-      passwordController.clear();
-    }
+  void showSnackbar(BuildContext context, String message, {bool isSuccess = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(fontSize: 16),
+        ),
+        backgroundColor: isSuccess ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   @override
@@ -139,49 +136,14 @@ class LoginPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 30),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(
-                        color: Colors.blue[900]!,
-                        width: 2.0,
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: TextField(
-                      controller: usernameController,
-                      decoration: const InputDecoration(
-                        hintText: "Username", // Menggunakan username sebagai input
-                        border: InputBorder.none,
-                      ),
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ),
+                  buildTextField(usernameController, "Username"),
                   const SizedBox(height: 20),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(
-                        color: Colors.blue[900]!,
-                        width: 2.0,
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: TextField(
-                      controller: passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        hintText: "Password",
-                        border: InputBorder.none,
-                      ),
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ),
+                  buildTextField(passwordController, "Password", isPassword: true),
                   const SizedBox(height: 40),
                   ElevatedButton(
                     onPressed: () {
                       FocusScope.of(context).unfocus();
-                      login(usernameController.text, passwordController.text, context);
+                      login(context);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[900],
@@ -200,9 +162,7 @@ class LoginPage extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => RegisterPage(),
-                        ),
+                        MaterialPageRoute(builder: (context) => RegisterPage()),
                       );
                     },
                     child: Text(
@@ -221,6 +181,28 @@ class LoginPage extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget buildTextField(TextEditingController controller, String hintText, {bool isPassword = false}) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(
+          color: Colors.blue[900]!,
+          width: 2.0,
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword,
+        decoration: InputDecoration(
+          hintText: hintText,
+          border: InputBorder.none,
+        ),
+        style: const TextStyle(fontSize: 18),
       ),
     );
   }
