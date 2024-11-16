@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-import 'package:google_fonts/google_fonts.dart';
-=======
 import 'package:kompen/dosen/ProfilePage.dart';
->>>>>>> e88278ae2dd2621af214d0f6444d1014219c1f7a
 // import 'package:intl/intl.dart'; // Untuk format tanggal
+
 
 void main() {
   runApp(MyApp());
@@ -26,10 +23,9 @@ class AddTaskPage extends StatefulWidget {
 
 class _AddTaskPageState extends State<AddTaskPage> {
   final TextEditingController _namaTugasController = TextEditingController();
-  final TextEditingController _deskripsiTugasController =
-      TextEditingController();
+  final TextEditingController _deskripsiTugasController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
-
+  
   String _tipeTugas = 'Online';
   String _jenisTugas = 'Teknis';
   String _bidangKompetensi = 'Web dev';
@@ -143,8 +139,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         labelText: "Jenis Tugas",
                         border: OutlineInputBorder(),
                       ),
-                      items: <String>['Teknis', 'Pengabdian', 'Penelitian']
-                          .map((String value) {
+                      items: <String>['Teknis', 'Pengabdian', 'Penelitian'].map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -171,8 +166,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         labelText: "Bidang Kompetensi",
                         border: OutlineInputBorder(),
                       ),
-                      items: <String>['Web dev', 'Data Science', 'AI']
-                          .map((String value) {
+                      items: <String>['Web dev', 'Data Science', 'AI'].map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -193,8 +187,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         labelText: "Bobot Tugas",
                         border: OutlineInputBorder(),
                       ),
-                      items: <String>['1 Jam', '3 Jam', '5 Jam']
-                          .map((String value) {
+                      items: <String>['1 Jam', '3 Jam', '5 Jam'].map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -230,14 +223,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       onPressed: () {
                         print('Tugas disimpan: ${_namaTugasController.text}');
                       },
-                      child: Text(
-                        'Edit Tugas',
-                        style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)
-                      ),
+                      child: Text("Simpan Tugas"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 255, 238, 0),
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        backgroundColor: Colors.orange,
                       ),
                     ),
                   ),
@@ -247,7 +235,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      child: Text("Batal", style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
+                      child: Text("Batal"),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.grey,
                       ),

@@ -78,23 +78,6 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
-<<<<<<< HEAD
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => LihatTugasPage()),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF191970),
-                            ),
-                            child:Text('Lihat Tugas', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
-=======
                               Text(
                                 '21237880012',
                                 style: GoogleFonts.poppins(
@@ -122,7 +105,6 @@ class HomeScreen extends StatelessWidget {
                                 ),
                               ),
                             ],
->>>>>>> e88278ae2dd2621af214d0f6444d1014219c1f7a
                           ),
                         ],
                       ),
@@ -219,16 +201,12 @@ class HomeScreen extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.yellow[600],
                         ),
-<<<<<<< HEAD
-                        child: Text('Cek Request', style: GoogleFonts.poppins(fontSize: 14, color: Colors.white)),
-=======
                         child: const Text(
                           'Cek Request',
                           style: TextStyle(
                               color: Color.fromARGB(
                                   255, 51, 50, 50)), // Ubah warna teks di sini
                         ),
->>>>>>> e88278ae2dd2621af214d0f6444d1014219c1f7a
                       ),
                     ),
                   ),
