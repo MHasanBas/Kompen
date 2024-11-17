@@ -13,7 +13,7 @@ final TextEditingController namaController = TextEditingController();
 final TextEditingController passwordController = TextEditingController();
 final TextEditingController confirmPasswordController = TextEditingController();
 
-String url_domain = "http://192.168.122.83:8000";
+String url_domain = "http://192.168.18.30:8000";
 String url_create_data = url_domain + "/api/create_data";
 String url_get_levels = url_domain + "/api/levels";
 

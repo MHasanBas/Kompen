@@ -1,12 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:dio/dio.dart';
 import 'edit_tugas.dart';
 import 'package:kompen/dosen/ProfilePage.dart';
 
-class DetailTugasPage extends StatelessWidget {
-  final Map<String, dynamic> tugas;
+final dio = Dio();
 
-  const DetailTugasPage({Key? key, required this.tugas}) : super(key: key);
+var all_data = [];
+
+final TextEditingController usernameController = TextEditingController();
+final TextEditingController namaController = TextEditingController();
+final TextEditingController passwordController = TextEditingController();
+final TextEditingController confirmPasswordController = TextEditingController();
+
+String url_domain = "http://192.168.18.30:8000";
+String url_detail_data = url_domain + "/api/tugas/detail_data";
+
+class DetailTugasPage extends StatefulWidget {
+  final String tugasId; // ID tugas untuk diambil dari API
+
+  const DetailTugasPage({Key? key, required this.tugasId, required Map<String, dynamic> tugas}) : super(key: key);
+
+  @override
+  _DetailTugasPage createState() => _DetailTugasPage();
+}
+
+class _DetailTugasPage extends State<DetailTugasPage> {
+  Map<String, dynamic>? tugas;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTugas(widget.tugasId);
+  }
+
+  Future<void> fetchTugas(String tugasId) async {
+    try {
+      print("Fetching tugas with ID: $tugasId");
+
+      Response response = await dio.post(
+        url_detail_data,
+        data: {"tugas_id": tugasId},
+      );
+
+      print("Response status code: ${response.statusCode}");
+      print("Response data: ${response.data}");
+
+      if (response.statusCode == 200) {
+        setState(() {
+          tugas = response.data;
+          isLoading = false;
+        });
+      } else if (response.statusCode == 404) {
+        throw Exception('Tugas tidak ditemukan');
+      } else {
+        throw Exception('Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error fetching tugas: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengambil detail tugas: $e')),
+      );
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +111,7 @@ class DetailTugasPage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      tugas['title'] ?? 'Membuat PPT',
+                      tugas?['tugas_nama'] ?? 'Judul Tugas',
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -60,7 +120,7 @@ class DetailTugasPage extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      tugas['status'] ?? 'Online',
+                      tugas?['tugas_tipe'] ?? 'Status tidak tersedia',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.green,
@@ -74,7 +134,7 @@ class DetailTugasPage extends StatelessWidget {
                     ),
                     SizedBox(height: 16),
                     Text(
-                      tugas['description'] ?? 'Membuat Presentasi (PPT) untuk mata kuliah ...., dengan materi ....',
+                      tugas?['tugas_deskripsi'] ?? 'Deskripsi tidak tersedia',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: Colors.blueGrey[700],
@@ -85,37 +145,43 @@ class DetailTugasPage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                       ElevatedButton(
-  onPressed: () {
-    // Aksi untuk edit tugas, arahkan ke halaman edit_tugas.dart
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddTaskPage(), // Ganti EditTugasPage dengan widget dari halaman edit_tugas.dart
-      ),
-    );
-  },
-  child: Text(
-    'Edit Tugas',
-    style: GoogleFonts.poppins(fontSize: 14, color: Colors.white,),
-  ),
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Color(0xFF6200EE),
-    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-  ),
-),
-
+                        ElevatedButton(
+                          onPressed: () {
+                            // Aksi untuk edit tugas, arahkan ke halaman edit_tugas.dart
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    AddTaskPage(), // Ganti EditTugasPage dengan widget dari halaman edit_tugas.dart
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'Edit Tugas',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF6200EE),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                          ),
+                        ),
                         ElevatedButton(
                           onPressed: () {
                             // Aksi untuk hapus tugas
                           },
                           child: Text(
                             'Hapus Tugas',
-                            style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+                            style: GoogleFonts.poppins(
+                                fontSize: 14, color: Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey,
-                            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
                           ),
                         ),
                       ],
@@ -158,7 +224,12 @@ class DetailTugasPage extends StatelessWidget {
               IconButton(
                 icon: Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const Profilescreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Profilescreen()
+                    )
+                  );
                 },
               ),
             ],
