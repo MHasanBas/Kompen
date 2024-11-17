@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
+import 'package:kompen/dosen/task_approval_page.dart';
 import 'edit_tugas.dart';
 import 'package:kompen/dosen/ProfilePage.dart';
+import 'dashboard.dart';
+import 'notifikasi.dart';
 
 final dio = Dio();
 
 var all_data = [];
 
-final TextEditingController usernameController = TextEditingController();
-final TextEditingController namaController = TextEditingController();
+// final TextEditingController usernameController = TextEditingController();
+// final TextEditingController namaController = TextEditingController();
 final TextEditingController passwordController = TextEditingController();
 final TextEditingController confirmPasswordController = TextEditingController();
 
@@ -19,7 +22,9 @@ String url_detail_data = url_domain + "/api/tugas/detail_data";
 class DetailTugasPage extends StatefulWidget {
   final String tugasId; // ID tugas untuk diambil dari API
 
-  const DetailTugasPage({Key? key, required this.tugasId, required Map<String, dynamic> tugas}) : super(key: key);
+  const DetailTugasPage(
+      {Key? key, required this.tugasId, required Map<String, dynamic> tugas})
+      : super(key: key);
 
   @override
   _DetailTugasPage createState() => _DetailTugasPage();
@@ -205,31 +210,42 @@ class _DetailTugasPage extends State<DetailTugasPage> {
               IconButton(
                 icon: Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke home
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            HomeScreen()), // Ganti dengan halaman yang sesuai
+                  );
                 },
               ),
               IconButton(
                 icon: Icon(Icons.access_time, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke halaman waktu
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            TaskApprovalPage()), // Ganti dengan halaman yang sesuai
+                  );
                 },
               ),
               SizedBox(width: 50), // Space for the FAB
               IconButton(
                 icon: Icon(Icons.mail, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke halaman pesan
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            NotifikasiPage()), // Ganti dengan halaman yang sesuai
+                  );
                 },
               ),
               IconButton(
                 icon: Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const Profilescreen()
-                    )
-                  );
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => Profilescreen()));
                 },
               ),
             ],
@@ -238,7 +254,10 @@ class _DetailTugasPage extends State<DetailTugasPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Aksi untuk FAB
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AddTaskPage()), // Ganti dengan halaman yang sesuai 
+        );
         },
         child: Icon(
           Icons.add,
