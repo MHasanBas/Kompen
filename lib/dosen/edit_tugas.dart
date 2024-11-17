@@ -2,26 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:kompen/dosen/ProfilePage.dart';
 // import 'package:intl/intl.dart'; // Untuk format tanggal
 
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: AddTaskPage(),
-    );
-  }
-}
-
-class AddTaskPage extends StatefulWidget {
+class EditTugasPage extends StatefulWidget {
   @override
   _AddTaskPageState createState() => _AddTaskPageState();
 }
 
-class _AddTaskPageState extends State<AddTaskPage> {
+class _AddTaskPageState extends State<EditTugasPage> {
   final TextEditingController _namaTugasController = TextEditingController();
   final TextEditingController _deskripsiTugasController = TextEditingController();
   DateTime _selectedDate = DateTime.now();

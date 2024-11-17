@@ -61,7 +61,7 @@ class LihatTugasPage extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DetailTugasPage(tugas: tugas, tugasId: '1',),
+                          builder: (context) => DetailTugasPage(tugasId: '8',),
                         ),
                       );
                     },
