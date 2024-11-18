@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'mahasiswa/home_page.dart' as mahasiswa;
 import 'dosen/dashboard.dart' as dosen;
 import 'tendik/dashboard.dart' as tendik;
@@ -17,7 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final Dio dio = Dio();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final String urlLogin = "http://192.168.122.83:8000/api/login";
+  final String urlLogin = "http://192.168.31.68:8000/api/login";
 
   @override
   void dispose() {
@@ -95,6 +96,13 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> saveUserCredentials(String userId, String levelId) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_id', userId); // Menyimpan user_id
+    await prefs.setString('level_id', levelId); // Menyimpan level_id
+    
+  }
+
   Future<void> login(String username, String password) async {
     try {
       final response = await dio.post(urlLogin, data: {
@@ -106,8 +114,12 @@ class _LoginPageState extends State<LoginPage> {
         final data = response.data;
         final String? levelId = data['user']['level_id']?.toString();
         final String userName = data['user']['nama'] ?? 'Pengguna';
+        final String userId = data['user']['id'].toString(); // Menyimpan user_id
 
         if (levelId != null) {
+          // Menyimpan user_id dan level_id di SharedPreferences
+          await saveUserCredentials(userId, levelId);
+
           showLoginResultDialog(context, 'Selamat datang, $userName!', true, levelId);
         } else {
           showLoginResultDialog(context, 'Level ID tidak ditemukan.', false, null);
@@ -124,6 +136,16 @@ class _LoginPageState extends State<LoginPage> {
       usernameController.clear();
       passwordController.clear();
     }
+  }
+
+  Future<String?> getUserId() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_id');
+  }
+
+  Future<String?> getLevelId() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('level_id');
   }
 
   @override

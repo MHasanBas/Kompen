@@ -43,6 +43,7 @@ dependencies:
   http: ^1.2.2
   google_fonts: ^6.2.1
   cupertino_icons: ^1.0.8
+  shared_preferences: ^2.0.11
 
 
   # The following adds the Cupertino Icons font to your application.
