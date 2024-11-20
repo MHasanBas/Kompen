@@ -1,77 +1,117 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'task_detail_screen.dart';
 
-class TasksScreen extends StatelessWidget {
-  final List<Map<String, String>> tasks = const [
-    {
-      "title": "Membuat PPT",
-      "description": "Membuat Presentasi (PPT) untuk mata kuliah.",
-    },
-    {
-      "title": "Rekap Nilai",
-      "description": "Merekap nilai mahasiswa.",
-    },
-    {
-      "title": "Arsip Absensi",
-      "description": "Mengarsip kertas absensi semua kelas.",
-    },
-  ];
+class TasksScreen extends StatefulWidget {
+  @override
+  _TasksScreenState createState() => _TasksScreenState();
+}
+
+class _TasksScreenState extends State<TasksScreen> {
+  List<Map<String, dynamic>> tasks = []; // Menyimpan daftar tugas
+  final Dio dio = Dio(); // Inisialisasi Dio untuk HTTP request
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTasks(); // Ambil data dari API saat pertama kali dimuat
+  }
+
+  // Fungsi untuk mengambil data tugas dari API
+  Future<void> fetchTasks() async {
+    try {
+      final response = await dio.get('http://192.168.122.83:8000/api/tugas'); // URL API
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        setState(() {
+          tasks = data.map((task) {
+            return {
+              "taskId": task["tugas_id"], // Menambahkan taskId
+              "title": task["tugas_nama"] ?? "Judul tidak tersedia",
+              "description": task["tugas_deskripsi"] ?? "Deskripsi tidak tersedia",
+              "deadline": task["tugas_tenggat"], // Tenggat waktu
+            };
+          }).toList();
+        });
+      } else {
+        throw Exception('Gagal memuat data tugas');
+      }
+    } catch (e) {
+      print("Error fetching tasks: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Tugas"),
-        centerTitle: true, // Center title for better aesthetics
+        centerTitle: true,
       ),
-      body: Container(
-        color: Colors.grey[100], // Light grey background for contrast
-        child: ListView.builder(
-          itemCount: tasks.length,
-          itemBuilder: (context, index) {
-            return Card(
-              margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              elevation: 4, // Add elevation for shadow effect
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12), // Rounded corners
-              ),
-              child: ListTile(
-                contentPadding: EdgeInsets.all(16), // Add padding for ListTile
-                title: Text(
-                  tasks[index]["title"]!,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: Text(
-                  tasks[index]["description"]!,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700], // Slightly darker grey for description
-                  ),
-                ),
-                leading: Icon(
-                  Icons.task, // Add an icon for visual appeal
-                  size: 40,
-                  color: Colors.blueAccent, // Custom color for the icon
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TaskDetailScreen(
-                        title: tasks[index]["title"]!,
-                        description: tasks[index]["description"]!,
+      body: tasks.isEmpty
+          ? Center(child: CircularProgressIndicator()) // Loader saat data belum tersedia
+          : Container(
+              color: Colors.grey[100],
+              child: ListView.builder(
+                itemCount: tasks.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      contentPadding: EdgeInsets.all(16),
+                      title: Text(
+                        tasks[index]["title"],
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            tasks[index]["description"],
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            "Tenggat: ${tasks[index]["deadline"]}",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.redAccent,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+                      leading: Icon(
+                        Icons.task,
+                        size: 40,
+                        color: Colors.blueAccent,
+                      ),
+                      onTap: () {
+                        // Pastikan taskId dikirimkan ke TaskDetailScreen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TaskDetailScreen(
+                              taskId: tasks[index]["taskId"], // Mengirimkan taskId
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   );
                 },
               ),
-            );
-          },
-        ),
-      ),
+            ),
     );
   }
 }

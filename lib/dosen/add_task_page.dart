@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dashboard.dart';
+import 'ProfilePage.dart';
+import 'notifikasi.dart';
+import 'task_approval_page.dart';
 
 class MyApp extends StatelessWidget {
   @override
@@ -265,37 +269,52 @@ class _AddTaskPageState extends State<AddTaskPage> {
         ),
       ),
       bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        notchMargin: 8,
-        color: Colors.indigo[900],
-        child: Container(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 5,
+        color: const Color(0xFF191970),
+        child: SizedBox(
           height: 70,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               IconButton(
-                icon: Icon(Icons.home, color: Colors.white, size: 30),
+                icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke halaman Home
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
                 },
               ),
               IconButton(
-                icon: Icon(Icons.access_time, color: Colors.white, size: 30),
+                icon: const Icon(Icons.access_time,
+                    color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke halaman History
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TaskApprovalPage()),
+                  );
                 },
               ),
-              SizedBox(width: 50),
+              const SizedBox(width: 50),
               IconButton(
-                icon: Icon(Icons.mail, color: Colors.white, size: 30),
+                icon: const Icon(Icons.mail, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke halaman Notifications
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const NotifikasiPage()),
+                  );
                 },
               ),
               IconButton(
-                icon: Icon(Icons.person, color: Colors.white, size: 30),
+                icon: const Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigasi ke halaman Profile
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const Profilescreen()),
+                  );
                 },
               ),
             ],

@@ -17,7 +17,7 @@ class LihatTugasPage extends StatefulWidget {
 class _LihatTugasPageState extends State<LihatTugasPage> {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: "http://192.168.31.68:8000/api", // Ganti dengan URL backend Laravel Anda
+      baseUrl: "http://192.168.122.83:8000/api", // Ganti dengan URL backend Laravel Anda
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",

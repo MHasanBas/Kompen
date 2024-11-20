@@ -58,55 +58,68 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16.0),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Hasan", // User name from the Figma
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 20.0,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                  Expanded( // Gunakan Expanded untuk mengatur lebar otomatis
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Hasan", // User name from the Figma
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                              fontSize: 20.0,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ),
-                      Text(
-                        "2241760069", // NIM
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 16.0,
-                            color: Colors.white,
+                        Text(
+                          "2241760069", // NIM
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                              fontSize: 16.0,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 8.0), // Beri jarak antara NIM dan tombol
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => TasksScreen()),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 10.0),
+                          ),
+                          child: const Text(
+                            "Yuk Kompen!",
+                            style: TextStyle(
+                              color: Color(0xFF001C72), // Dark Blue Color
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const Spacer(),
-                  // Button "Yuk Kompen" doesn't navigate anymore
-                  ElevatedButton(
+
+                  // QR Code Button next to NIM
+                  IconButton(
+                    icon: const Icon(
+                      Icons.qr_code_scanner, // QR Code Icon
+                      color: Colors.white,
+                      size: 90.0,
+                    ),
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => TasksScreen()),
-                      );
-                      // Action can be left empty or define another action
+                      // Aksi saat tombol QR Code ditekan
+                      print("QR Code Button Pressed");
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0, vertical: 10.0),
-                    ),
-                    child: const Text(
-                      "Yuk Kompen!",
-                      style: TextStyle(
-                        color: Color(0xFF001C72), // Dark Blue Color
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -243,7 +256,7 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
+     bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 5,
         color: Colors.indigo[900], // Dark blue bottom bar

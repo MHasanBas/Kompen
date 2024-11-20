@@ -7,6 +7,8 @@ import 'notifikasi.dart';
 import 'cek_tugas.dart';
 import 'ProfilePage.dart';
 import 'add_task_page.dart';
+import 'alpha_mahasiswa_page.dart ';
+import 'KompenMahasiswaPage.dart';
 
 class HomeScreen extends StatelessWidget {
   final List<Task> tasks = [
@@ -36,7 +38,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         toolbarHeight: 90,
       ),
       body: SingleChildScrollView(
@@ -132,7 +134,13 @@ class HomeScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AlphaMahasiswaPage()),
+                      );
+                    },
                     icon: const Icon(Icons.person_outline),
                     label: const Text('Alpa Mahasiswa'),
                     style: ElevatedButton.styleFrom(
@@ -142,7 +150,13 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => KompenMahasiswaPage()),
+                      );
+                    },
                     icon: const Icon(Icons.school),
                     label: const Text('Mahasiswa Kompen'),
                     style: ElevatedButton.styleFrom(
