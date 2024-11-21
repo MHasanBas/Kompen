@@ -19,27 +19,36 @@ class _TasksScreenState extends State<TasksScreen> {
 
   // Fungsi untuk mengambil data tugas dari API
   Future<void> fetchTasks() async {
-    try {
-      final response = await dio.get('http://192.168.122.83:8000/api/tugas'); // URL API
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-        setState(() {
-          tasks = data.map((task) {
-            return {
-              "taskId": task["tugas_id"], // Menambahkan taskId
-              "title": task["tugas_nama"] ?? "Judul tidak tersedia",
-              "description": task["tugas_deskripsi"] ?? "Deskripsi tidak tersedia",
-              "deadline": task["tugas_tenggat"], // Tenggat waktu
-            };
-          }).toList();
-        });
-      } else {
-        throw Exception('Gagal memuat data tugas');
-      }
-    } catch (e) {
-      print("Error fetching tasks: $e");
+  try {
+    final response = await dio.post(
+      'http://192.168.188.36:8000/api/tugas', // URL API
+      data: {}, // Jika tidak membutuhkan data tambahan, kirim objek kosong
+      options: Options(
+        headers: {
+          'Content-Type': 'application/json', // Pastikan tipe konten sesuai
+        },
+      ),
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = response.data;
+      setState(() {
+        tasks = data.map((task) {
+          return {
+            "taskId": task["tugas_id"],
+            "title": task["tugas_nama"] ?? "Judul tidak tersedia",
+            "description": task["tugas_deskripsi"] ?? "Deskripsi tidak tersedia",
+            "deadline": task["tugas_tenggat"],
+          };
+        }).toList();
+      });
+    } else {
+      throw Exception('Gagal memuat data tugas. Kode status: ${response.statusCode}');
     }
+  } catch (e) {
+    print("Error fetching tasks: $e");
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

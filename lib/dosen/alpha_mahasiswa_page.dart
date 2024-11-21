@@ -1,52 +1,130 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'ProfilePage.dart';
 import 'add_task_page.dart';
 import 'task_approval_page.dart';
 import 'notifikasi.dart';
 import 'dashboard.dart';  // Ensure this is properly imported
 
-class AlphaMahasiswaPage extends StatelessWidget {
+class Mahasiswa {
+  final String nim;
+  final String nama;
+  final int jamAlpa;
+  final String tugasNama;
+  final String tugasDeskripsi;
+  final String tugasTenggat;
+
+  Mahasiswa({
+    required this.nim,
+    required this.nama,
+    required this.jamAlpa,
+    required this.tugasNama,
+    required this.tugasDeskripsi,
+    required this.tugasTenggat,
+  });
+
+  factory Mahasiswa.fromJson(Map<String, dynamic> json) {
+    return Mahasiswa(
+      nim: json['mahasiswa_alpa_nim'] ?? '',
+      nama: json['mahasiswa_alpa_nama'] ?? '',
+      jamAlpa: json['jam_alpa'] ?? 0,
+      tugasNama: json['progress']?['tugas']?['tugas_nama'] ?? '',
+      tugasDeskripsi: json['progress']?['tugas']?['tugas_deskripsi'] ?? '',
+      tugasTenggat: json['progress']?['tugas']?['tugas_tenggat'] ?? '',
+    );
+  }
+}
+
+class AlphaMahasiswaPage extends StatefulWidget {
+  @override
+  _AlphaMahasiswaPageState createState() => _AlphaMahasiswaPageState();
+}
+
+class _AlphaMahasiswaPageState extends State<AlphaMahasiswaPage> {
+  late Future<List<Mahasiswa>> mahasiswaList;
+
+  @override
+  void initState() {
+    super.initState();
+    mahasiswaList = fetchMahasiswaAlpha();
+  }
+
+  Future<List<Mahasiswa>> fetchMahasiswaAlpha() async {
+    Dio dio = Dio();
+    final String apiUrl = 'http://192.168.122.83:8000/api/alpa'; // Replace with your API URL
+
+    try {
+      final response = await dio.post(
+        apiUrl,
+        data: {
+          'key1': 'value1', // Replace with actual parameters required by the API
+          'key2': 'value2',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = response.data;
+        return data.map((json) => Mahasiswa.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load data');
+      }
+    } catch (e) {
+      throw Exception('Failed to load data: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title Section
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              'Alpha Mahasiswa',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 39, 40, 43),
-              ),
-            ),
-          ),
-          // Table Section
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildTableHeader(),
-                      const Divider(height: 1, thickness: 1),
-                      ..._buildTableRows(),
-                    ],
+      body: FutureBuilder<List<Mahasiswa>>(
+        future: mahasiswaList,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No data available.'));
+          } else {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    'Alpha Mahasiswa',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 39, 40, 43),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ),
-        ],
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Card(
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            _buildTableHeader(),
+                            const Divider(height: 1, thickness: 1),
+                            ..._buildTableRows(snapshot.data!),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+        },
       ),
       bottomNavigationBar: _buildBottomNavigationBar(context),
       floatingActionButton: _buildFloatingActionButton(context),
@@ -65,7 +143,7 @@ class AlphaMahasiswaPage extends StatelessWidget {
       ),
       backgroundColor: Colors.white,
       elevation: 1,
-      centerTitle: false, // Align title to the left
+      centerTitle: false,
       iconTheme: const IconThemeData(color: Colors.indigo),
     );
   }
@@ -82,40 +160,30 @@ class AlphaMahasiswaPage extends StatelessWidget {
           Expanded(flex: 1, child: _TableHeaderCell(text: 'No.')),
           Expanded(flex: 2, child: _TableHeaderCell(text: 'NIM')),
           Expanded(flex: 3, child: _TableHeaderCell(text: 'Nama')),
-          Expanded(flex: 2, child: _TableHeaderCell(text: 'Kompen')),
-          Expanded(flex: 2, child: _TableHeaderCell(text: 'Alpha')),
+          Expanded(flex: 2, child: _TableHeaderCell(text: 'Jam Alpa')),
+          Expanded(flex: 3, child: _TableHeaderCell(text: 'Tugas Nama')),
         ],
       ),
     );
   }
 
-  List<Widget> _buildTableRows() {
-    final data = [
-      ['1.', '2241760139', 'M. Hasan', '1 Jam', '4 Jam'],
-      ['2.', '2241760139', 'Faiz Abiyu', '1 Jam', '4 Jam'],
-      ['3.', '2241760139', 'Faiz Basri', '1 Jam', '4 Jam'],
-      ['4.', '2241760139', 'Faiz Abiyu', '1 Jam', '4 Jam'],
-      ['5.', '2241760139', 'Faiz Abiyu', '1 Jam', '4 Jam'],
-      ['6.', '2241760139', 'M. Rizky', '2 Jam', '5 Jam'],
-      ['7.', '2241760139', 'Ahmad N.', '1 Jam', '3 Jam'],
-    ];
-
+  List<Widget> _buildTableRows(List<Mahasiswa> mahasiswaList) {
     return List.generate(
-      data.length,
+      mahasiswaList.length,
       (index) => Column(
         children: [
           Container(
             color: index % 2 == 0
                 ? Colors.grey.shade100
-                : Colors.white, // Alternating row colors
+                : Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
             child: Row(
               children: [
-                Expanded(flex: 1, child: _TableRowCell(text: data[index][0])),
-                Expanded(flex: 2, child: _TableRowCell(text: data[index][1])),
-                Expanded(flex: 3, child: _TableRowCell(text: data[index][2])),
-                Expanded(flex: 2, child: _TableRowCell(text: data[index][3])),
-                Expanded(flex: 2, child: _TableRowCell(text: data[index][4])),
+                Expanded(flex: 1, child: _TableRowCell(text: (index + 1).toString())),
+                Expanded(flex: 2, child: _TableRowCell(text: mahasiswaList[index].nim)),
+                Expanded(flex: 3, child: _TableRowCell(text: mahasiswaList[index].nama)),
+                Expanded(flex: 2, child: _TableRowCell(text: mahasiswaList[index].jamAlpa.toString())),
+                Expanded(flex: 3, child: _TableRowCell(text: mahasiswaList[index].tugasNama)),
               ],
             ),
           ),
@@ -214,11 +282,7 @@ class _TableHeaderCell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
-        fontWeight: FontWeight.bold,
-        fontSize: 12,
-        color: Colors.indigo,
-      ),
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
       textAlign: TextAlign.center,
     );
   }
