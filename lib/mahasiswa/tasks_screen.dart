@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'task_detail_screen.dart';
 
+final Dio dio = Dio(); // Inisialisasi Dio untuk HTTP request
+
+// URL API
+final String baseUrl = "http://192.168.194.83:8000/api/tugas";
+
 class TasksScreen extends StatefulWidget {
   @override
   _TasksScreenState createState() => _TasksScreenState();
@@ -9,7 +14,6 @@ class TasksScreen extends StatefulWidget {
 
 class _TasksScreenState extends State<TasksScreen> {
   List<Map<String, dynamic>> tasks = []; // Menyimpan daftar tugas
-  final Dio dio = Dio(); // Inisialisasi Dio untuk HTTP request
 
   @override
   void initState() {
@@ -19,36 +23,36 @@ class _TasksScreenState extends State<TasksScreen> {
 
   // Fungsi untuk mengambil data tugas dari API
   Future<void> fetchTasks() async {
-  try {
-    final response = await dio.post(
-      'http://192.168.188.36:8000/api/tugas', // URL API
-      data: {}, // Jika tidak membutuhkan data tambahan, kirim objek kosong
-      options: Options(
-        headers: {
-          'Content-Type': 'application/json', // Pastikan tipe konten sesuai
-        },
-      ),
-    );
-    if (response.statusCode == 200) {
-      final List<dynamic> data = response.data;
-      setState(() {
-        tasks = data.map((task) {
-          return {
-            "taskId": task["tugas_id"],
-            "title": task["tugas_nama"] ?? "Judul tidak tersedia",
-            "description": task["tugas_deskripsi"] ?? "Deskripsi tidak tersedia",
-            "deadline": task["tugas_tenggat"],
-          };
-        }).toList();
-      });
-    } else {
-      throw Exception('Gagal memuat data tugas. Kode status: ${response.statusCode}');
-    }
-  } catch (e) {
-    print("Error fetching tasks: $e");
-  }
-}
+    try {
+      final response = await dio.post(
+        baseUrl,
+        data: {}, // Jika tidak membutuhkan data tambahan, kirim objek kosong
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json', // Pastikan tipe konten sesuai
+          },
+        ),
+      );
 
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
+        setState(() {
+          tasks = data.map((task) {
+            return {
+              "taskId": task["tugas_id"],
+              "title": task["tugas_nama"] ?? "Judul tidak tersedia",
+              "description": task["tugas_deskripsi"] ?? "Deskripsi tidak tersedia",
+              "deadline": task["tugas_tenggat"],
+            };
+          }).toList();
+        });
+      } else {
+        throw Exception('Gagal memuat data tugas. Kode status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error fetching tasks: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +110,6 @@ class _TasksScreenState extends State<TasksScreen> {
                         color: Colors.blueAccent,
                       ),
                       onTap: () {
-                        // Pastikan taskId dikirimkan ke TaskDetailScreen
                         Navigator.push(
                           context,
                           MaterialPageRoute(

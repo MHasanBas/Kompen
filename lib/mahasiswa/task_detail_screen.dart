@@ -2,49 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 
 class TaskDetailScreen extends StatefulWidget {
-  final int taskId; // Parameter tugas ID yang diterima dari halaman sebelumnya
+  final int taskId;
 
-  const TaskDetailScreen({Key? key, required this.taskId}) : super(key: key); // Konstruktor dengan parameter tugas ID
+  const TaskDetailScreen({Key? key, required this.taskId}) : super(key: key);
 
   @override
   _TaskDetailScreenState createState() => _TaskDetailScreenState();
 }
 
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
-  late Map<String, dynamic> taskDetail; // Variabel untuk menyimpan detail tugas
-  bool isLoading = true; // Indikator loading saat data belum diambil
+  late Map<String, dynamic> taskDetail;
+  bool isLoading = true;
 
-  final Dio dio = Dio(); // Inisialisasi Dio untuk melakukan request HTTP
+  final Dio dio = Dio();
 
   @override
   void initState() {
     super.initState();
-    fetchTaskDetail(); // Mengambil detail tugas saat halaman pertama kali dimuat
+    fetchTaskDetail();
   }
 
-  // Fungsi untuk mengambil detail tugas berdasarkan taskId
   Future<void> fetchTaskDetail() async {
     try {
       final response = await dio.get(
-        'http://192.168.122.83:8000/api/tugas/show', // URL API endpoint
+        'http://192.168.194.83:8000/api/tugas/show',
         queryParameters: {
-          'tugas_id': widget.taskId, // Mengirimkan tugas_id dalam query parameter
+          'tugas_id': widget.taskId,
         },
       );
 
-      // Cek jika status code response adalah 200 (OK)
       if (response.statusCode == 200) {
         setState(() {
-          taskDetail = response.data; // Menyimpan data tugas ke dalam taskDetail
-          isLoading = false; // Mengubah status loading menjadi false setelah data berhasil diterima
+          taskDetail = response.data;
+          isLoading = false;
         });
       } else {
         throw Exception('Gagal memuat detail tugas');
       }
     } catch (e) {
-      print("Error fetching task detail: $e"); // Menangkap error jika request gagal
+      print("Error fetching task detail: $e");
       setState(() {
-        isLoading = false; // Menghentikan loading meskipun terjadi error
+        isLoading = false;
       });
     }
   }
@@ -59,7 +57,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.indigo[900]),
           onPressed: () {
-            Navigator.pop(context); // Kembali ke halaman sebelumnya
+            Navigator.pop(context);
           },
         ),
         title: Column(
@@ -77,7 +75,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         ),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator()) // Menampilkan loading indicator jika data belum tersedia
+          ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -98,7 +96,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            taskDetail["tugas_nama"] ?? "Judul tidak tersedia", // Menampilkan nama tugas
+                            taskDetail["tugas_nama"] ?? "Judul tidak tersedia",
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -106,9 +104,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 4),
-                          const Text(
-                            'Offline',
-                            style: TextStyle(
+                          Text(
+                            taskDetail["tugas_tipe"] ?? "Tipe tidak tersedia",
+                            style: const TextStyle(
                               fontSize: 14,
                               color: Colors.red,
                             ),
@@ -123,7 +121,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            taskDetail["tugas_deskripsi"] ?? "Deskripsi tidak tersedia", // Menampilkan deskripsi tugas
+                            taskDetail["tugas_deskripsi"] ?? "Deskripsi tidak tersedia",
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.black54,
@@ -135,22 +133,22 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
-                                children: const [
-                                  Icon(Icons.access_time, color: Colors.black54),
-                                  SizedBox(width: 8),
+                                children: [
+                                  const Icon(Icons.access_time, color: Colors.black54),
+                                  const SizedBox(width: 8),
                                   Text(
-                                    '16:00 PM\n9/14/2025',
-                                    style: TextStyle(fontSize: 14),
+                                    taskDetail["tugas_tenggat"] ?? "Tenggat tidak tersedia",
+                                    style: const TextStyle(fontSize: 14),
                                   ),
                                 ],
                               ),
                               Row(
-                                children: const [
-                                  Icon(Icons.arrow_downward, color: Colors.red),
-                                  SizedBox(width: 8),
+                                children: [
+                                  const Icon(Icons.arrow_downward, color: Colors.red),
+                                  const SizedBox(width: 8),
                                   Text(
-                                    '- 4 Jam\nAlpha',
-                                    style: TextStyle(fontSize: 14, color: Colors.red),
+                                    taskDetail["tugas_alpha"] ?? "Alpha tidak tersedia",
+                                    style: const TextStyle(fontSize: 14, color: Colors.red),
                                   ),
                                 ],
                               ),
@@ -162,12 +160,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {
-                      // Action saat tombol "Request Pekerjaan" ditekan
-                    },
+                    onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber[700], // Warna tombol
-                      minimumSize: const Size(double.infinity, 50), // Ukuran tombol
+                      backgroundColor: Colors.amber[700],
+                      minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -184,10 +180,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 ],
               ),
             ),
-       bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 8,
-        color: Colors.indigo[900], // Dark blue bottom bar
+        color: Colors.indigo[900],
         child: Container(
           height: 70,
           child: Row(
@@ -195,51 +191,32 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             children: [
               IconButton(
                 icon: const Icon(Icons.home, color: Colors.white, size: 30),
-                onPressed: () {
-                  // Navigate to home screen
-                },
+                onPressed: () {},
               ),
               IconButton(
                 icon: const Icon(Icons.access_time, color: Colors.white, size: 30),
-                onPressed: () {
-                  // Navigate to time screen
-                },
+                onPressed: () {},
               ),
-              const SizedBox(width: 50), // Space for the FAB
+              const SizedBox(width: 50),
               IconButton(
                 icon: const Icon(Icons.mail, color: Colors.white, size: 30),
-                onPressed: () {
-                  // Navigate to messages screen
-                },
+                onPressed: () {},
               ),
               IconButton(
                 icon: const Icon(Icons.person, color: Colors.white, size: 30),
-                onPressed: () {
-                  // Navigate to profile screen
-                },
+                onPressed: () {},
               ),
             ],
           ),
         ),
       ),
-      floatingActionButton: Container(
-        width: 90, // Larger size for the FAB
-        height: 90,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.blueAccent, // Brighter blue for the FAB
-        ),
-        child: FloatingActionButton(
-          elevation: 0, // Remove elevation to flatten the FAB
-          backgroundColor: Colors.transparent, // Transparent background
-          onPressed: () {
-            // Action for the FAB button, navigating to task screen
-          },
-          child: const Icon(
-            Icons.add,
-            size: 50, // Larger size for the plus icon
-            color: Colors.white, // White color for the plus icon
-          ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.blueAccent,
+        onPressed: () {},
+        child: const Icon(
+          Icons.add,
+          size: 50,
+          color: Colors.white,
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
