@@ -18,13 +18,21 @@ class _LoginPageState extends State<LoginPage> {
   final Dio dio = Dio();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final String urlLogin = "http://192.168.194.83:8000/api/login";
+  final String urlLogin = "http://192.168.18.30:8000/api/login";
 
   @override
   void dispose() {
     usernameController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  // Function to save user credentials including token
+  Future<void> saveUserCredentials(String userId, String levelId, String token) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_id', userId); // Save user_id
+    await prefs.setString('level_id', levelId); // Save level_id
+    await prefs.setString('auth_token', token); // Save the authentication token
   }
 
   void showLoginResultDialog(
@@ -96,13 +104,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> saveUserCredentials(String userId, String levelId) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_id', userId); // Menyimpan user_id
-    await prefs.setString('level_id', levelId); // Menyimpan level_id
-    
-  }
-
   Future<void> login(String username, String password) async {
     try {
       final response = await dio.post(urlLogin, data: {
@@ -114,15 +115,16 @@ class _LoginPageState extends State<LoginPage> {
         final data = response.data;
         final String? levelId = data['user']['level_id']?.toString();
         final String userName = data['user']['nama'] ?? 'Pengguna';
-        final String userId = data['user']['id'].toString(); // Menyimpan user_id
+        final String userId = data['user']['id'].toString(); // Save user_id
+        final String token = data['token']; // Save the token
 
-        if (levelId != null) {
-          // Menyimpan user_id dan level_id di SharedPreferences
-          await saveUserCredentials(userId, levelId);
+        if (levelId != null && token.isNotEmpty) {
+          // Save user_id, level_id, and token in SharedPreferences
+          await saveUserCredentials(userId, levelId, token);
 
           showLoginResultDialog(context, 'Selamat datang, $userName!', true, levelId);
         } else {
-          showLoginResultDialog(context, 'Level ID tidak ditemukan.', false, null);
+          showLoginResultDialog(context, 'Level ID atau token tidak ditemukan.', false, null);
         }
       } else {
         showLoginResultDialog(context, 'Username atau password salah', false, null);

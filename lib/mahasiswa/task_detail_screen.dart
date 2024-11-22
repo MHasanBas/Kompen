@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+
+final Dio dio = Dio();
+
+String url_domain = "http://192.168.18.30:8000";
+String url_detail_data = url_domain + "/api/tugas/show";
+String url_apply_data = url_domain + "/api/apply";
 
 class TaskDetailScreen extends StatefulWidget {
   final int taskId;
@@ -14,7 +22,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   late Map<String, dynamic> taskDetail;
   bool isLoading = true;
 
-  final Dio dio = Dio();
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
 
   @override
   void initState() {
@@ -24,11 +35,21 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
   Future<void> fetchTaskDetail() async {
     try {
+      String? authToken = await getAuthToken();
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
       final response = await dio.get(
-        'http://192.168.194.83:8000/api/tugas/show',
+        url_detail_data,
         queryParameters: {
           'tugas_id': widget.taskId,
         },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $authToken',
+          },
+        ),
       );
 
       if (response.statusCode == 200) {
@@ -44,6 +65,40 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> applyForTask() async {
+    try {
+      String? authToken = await getAuthToken();
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
+      final response = await dio.post(
+        url_apply_data,
+        data: {
+          'tugas_id': widget.taskId,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $authToken', 
+          },
+        ),
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Berhasil melakukan apply!')),
+        );
+      } else {
+        throw Exception('Gagal melakukan apply');
+      }
+    } catch (e) {
+      print("Error applying for task: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
   }
 
@@ -160,7 +215,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: applyForTask,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber[700],
                       minimumSize: const Size(double.infinity, 50),
