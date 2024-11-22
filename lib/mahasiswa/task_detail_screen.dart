@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 final Dio dio = Dio();
 
 String url_domain = "http://192.168.18.30:8000";

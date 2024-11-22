@@ -1,30 +1,90 @@
 import 'package:flutter/material.dart';
-import 'package:kompen/dosen/ProfilePage.dart';
-import 'package:kompen/dosen/notifikasi.dart';
-import 'add_task_page.dart'; 
-import 'dashboard.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(MyApp());
-}
+final Dio dio = Dio();
 
-class MyApp extends StatelessWidget {
+String url_domain = "http://192.168.18.30:8000";
+String url_approval_data = url_domain + "/api/apply_mahasiswa";
+String url_acc_data = url_domain + "/api/acc";
+String url_decline_data = url_domain + "/api/decline";
+
+class TaskApprovalPage extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(primarySwatch: Colors.indigo),
-      home: TaskApprovalPage(),
-    );
-  }
+  _TaskApprovalPageState createState() => _TaskApprovalPageState();
 }
 
-class TaskApprovalPage extends StatelessWidget {
-  final List<Map<String, String>> tasks = [
-    {"name": "Faiz Abiyu", "task": "Membuat PPT", "status": "Online"},
-    {"name": "Fahmi Mardiansyah", "task": "Membuat PPT", "status": "Online"},
-    {"name": "Hasan Basri", "task": "Membuat PPT", "status": "Online"},
-    {"name": "Naswya Syafinka", "task": "Membuat PPT", "status": "Online"},
-  ];
+class _TaskApprovalPageState extends State<TaskApprovalPage> {
+  List<Map<String, dynamic>> tasks = [];
+  
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTasks();
+  }
+
+  // Fetch tasks from the API
+  Future<void> fetchTasks() async {
+    try {
+      String? authToken = await getAuthToken();
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
+      final response = await dio.post(
+        url_approval_data, 
+        options: Options(
+          headers: {'Authorization': 'Bearer $authToken'},
+        ),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          tasks = List<Map<String, dynamic>>.from(response.data);
+        });
+      } else {
+        throw Exception('Failed to load tasks');
+      }
+    } catch (e) {
+      print('Error fetching tasks: $e');
+    }
+  }
+
+  Future<void> updateStatus(int applyId, bool isApproved) async {
+    try {
+      String? authToken = await getAuthToken();
+
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
+      final String url = isApproved ? url_acc_data : url_decline_data;
+
+      final response = await dio.post(
+          url,
+          data: {'apply_id': applyId},
+          options: Options(
+            headers: {'Authorization': 'Bearer $authToken'},
+          ),
+        );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Application ${isApproved ? 'approved' : 'rejected'} successfully!')),
+        );
+        fetchTasks();
+      } else {
+        throw Exception('Failed to update status');
+      }
+    } catch (e) {
+      print('Error updating status: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update status')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +96,7 @@ class TaskApprovalPage extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                "Suka Kompen.",
+                "Task Approval",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.indigo[900],
@@ -51,30 +111,32 @@ class TaskApprovalPage extends StatelessWidget {
         itemCount: tasks.length,
         itemBuilder: (context, index) {
           final task = tasks[index];
+          final tugas = task['tugas'];
+          final apply = task['apply'][0];
+
           return Card(
             margin: EdgeInsets.all(10),
             child: ListTile(
               contentPadding: EdgeInsets.all(10),
               leading: Icon(Icons.assignment, size: 50),
-              title: Text(task['task']!),
-              subtitle: Text('${task['name']} - ${task['status']}'),
+              title: Text(tugas != null && tugas['tugas_nama'] != null ? tugas['tugas_nama'] : 'Nama Tugas Tidak Ditemukan'),
+              subtitle: Text(
+                '${tugas != null && tugas['nama'] != null ? tugas['nama'] : 'Unknown user'} - '
+                'Status: ${apply != null && apply['apply_status'] != null ? apply['apply_status'] : 'Pending'}',
+              ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
                     icon: Icon(Icons.close, color: Colors.red),
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${task['name']} rejected!')),
-                      );
+                      updateStatus(apply['apply_id'], false); // Decline task (false)
                     },
                   ),
                   IconButton(
                     icon: Icon(Icons.check, color: Colors.green),
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${task['name']} approved!')),
-                      );
+                      updateStatus(apply['apply_id'], true); // Approve task (true)
                     },
                   ),
                 ],
@@ -95,10 +157,7 @@ class TaskApprovalPage extends StatelessWidget {
           elevation: 0,
           backgroundColor: Colors.transparent,
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AddTaskPage()),
-            );
+            // Navigate to Add Task page
           },
           child: Icon(
             Icons.add,
@@ -119,85 +178,32 @@ class TaskApprovalPage extends StatelessWidget {
               IconButton(
                 icon: Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomeScreen()),
-                  );
+                  // Navigate to Home page
                 },
               ),
               IconButton(
                 icon: Icon(Icons.access_time, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => TaskApprovalPage()),
-                  );
+                  // Navigate to Task Approval page
                 },
               ),
-              SizedBox(width: 50), // Empty space for floating button
+              SizedBox(width: 50),
               IconButton(
                 icon: Icon(Icons.mail, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => NotifikasiPage()),
-                  );
+                  // Navigate to Notifications page
                 },
               ),
               IconButton(
                 icon: Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Profilescreen()),
-                  );
+                  // Navigate to Profile page
                 },
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-// Dummy classes for navigation
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Home")),
-      body: Center(child: Text("Welcome to Home Page")),
-    );
-  }
-}
-
-class HistoryScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("History")),
-      body: Center(child: Text("Welcome to History Page")),
-    );
-  }
-}
-
-class NotificationScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Notifications")),
-      body: Center(child: Text("Welcome to Notification Page")),
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Profile")),
-      body: Center(child: Text("Welcome to Profile Page")),
     );
   }
 }
