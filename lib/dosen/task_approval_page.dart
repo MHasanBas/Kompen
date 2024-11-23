@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 final Dio dio = Dio();
 
-String url_domain = "http://192.168.18.30:8000";
+String url_domain = "http://192.168.194.83:8000";
 String url_approval_data = url_domain + "/api/apply_mahasiswa";
 String url_acc_data = url_domain + "/api/acc";
 String url_decline_data = url_domain + "/api/decline";

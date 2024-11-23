@@ -1,17 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dashboard.dart';
-import 'ProfilePage.dart';
-import 'notifikasi.dart';
-import 'task_approval_page.dart';
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: AddTaskPage(),
-    );
-  }
-}
+import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart';
 
 class AddTaskPage extends StatefulWidget {
   @override
@@ -22,11 +13,37 @@ class _AddTaskPageState extends State<AddTaskPage> {
   final TextEditingController _namaTugasController = TextEditingController();
   final TextEditingController _deskripsiTugasController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
-  
+
   String _tipeTugas = 'Online';
-  String _jenisTugas = 'Teknis';
-  String _bidangKompetensi = 'Web dev';
-  String _bobotTugas = '5 Jam';
+  String? _jenisTugas;
+  String? _bidangKompetensi;
+  String _bobotTugas = '1 Jam';
+  String? _filePath;
+
+  List<dynamic> _jenisTugasOptions = [];
+  List<dynamic> _bidangKompetensiOptions = [];
+
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.194.83:8000/api'));
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOptions();
+  }
+
+  Future<void> _fetchOptions() async {
+    try {
+      final jenisTugasResponse = await _dio.get('/jenis_tugas');
+      final bidangKompetensiResponse = await _dio.get('/bidang_kompetensi');
+
+      setState(() {
+        _jenisTugasOptions = jenisTugasResponse.data;
+        _bidangKompetensiOptions = bidangKompetensiResponse.data;
+      });
+    } on DioError catch (e) {
+      print('Error: ${e.response?.statusCode} ${e.response?.data}');
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -42,6 +59,51 @@ class _AddTaskPageState extends State<AddTaskPage> {
     }
   }
 
+  Future<void> _pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      setState(() {
+        _filePath = result.files.single.path;
+      });
+    }
+  }
+
+  Future<void> _addTask(Map<String, dynamic> taskData) async {
+    try {
+      FormData formData = FormData.fromMap(taskData);
+      if (_filePath != null) {
+        formData.files.add(
+          MapEntry(
+            "file",
+            await MultipartFile.fromFile(_filePath!, filename: basename(_filePath!)),
+          ),
+        );
+      }
+      final response = await _dio.post('/tugas_dosen/create_data', data: formData);
+      print('Response status: ${response.statusCode}');
+      print('Response data: ${response.data}');
+    } on DioError catch (e) {
+      print('Error: ${e.response?.statusCode} ${e.response?.data}');
+    }
+  }
+
+  void _saveTask() async {
+    final Map<String, dynamic> taskData = {
+      'user_id': 1, // Replace with actual user ID
+      'tugas_nama': _namaTugasController.text,
+      'tugas_No': 'unique_task_id', // Replace with actual logic to generate unique ID
+      'jenis_id': _jenisTugas,
+      'tugas_tipe': _tipeTugas,
+      'tugas_deskripsi': _deskripsiTugasController.text,
+      'tugas_kuota': 1, // Replace with actual data
+      'tugas_jam_kompen': int.parse(_bobotTugas.split(' ')[0]), // Extract the numerical value
+      'tugas_tenggat': DateFormat('yyyy-MM-dd').format(_selectedDate),
+      'kompetensi_id': _bidangKompetensi,
+    };
+
+    await _addTask(taskData);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,7 +115,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
+            children: [
               // Input Nama Tugas
               TextField(
                 controller: _namaTugasController,
@@ -77,7 +139,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               SizedBox(height: 16),
 
-              // Bagian Unggah File
+              // Upload File
               Text("Upload File"),
               Row(
                 children: [
@@ -88,24 +150,19 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         border: Border.all(color: Colors.grey),
                         borderRadius: BorderRadius.circular(5),
                       ),
-                      child: Center(child: Text("file")),
+                      child: Center(child: Text(_filePath != null ? basename(_filePath!) : "file")),
                     ),
                   ),
                   IconButton(
                     icon: Icon(Icons.add_circle_outline),
-                    onPressed: () {
-                      // Tangani unggah file di sini
-                    },
+                    onPressed: _pickFile,
                   ),
                 ],
               ),
-              Text(
-                ".pdf .doc .xls .xlsx .pptx",
-                style: TextStyle(color: Colors.grey),
-              ),
+              Text(".pdf .doc .xls .xlsx .pptx", style: TextStyle(color: Colors.grey)),
               SizedBox(height: 16),
 
-              // Baris Dropdown Tipe Tugas dan Jenis Tugas
+              // Tipe dan Jenis Tugas
               Row(
                 children: [
                   Expanded(
@@ -136,15 +193,15 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         labelText: "Jenis Tugas",
                         border: OutlineInputBorder(),
                       ),
-                      items: <String>['Teknis', 'Pengabdian', 'Penelitian'].map((String value) {
+                      items: _jenisTugasOptions.map<DropdownMenuItem<String>>((dynamic value) {
                         return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
+                          value: value['jenis_id'].toString(),
+                          child: Text(value['jenis_nama']),
                         );
                       }).toList(),
                       onChanged: (newValue) {
                         setState(() {
-                          _jenisTugas = newValue!;
+                          _jenisTugas = newValue;
                         });
                       },
                     ),
@@ -153,7 +210,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               SizedBox(height: 16),
 
-              // Baris Dropdown Bidang Kompetensi dan Bobot Tugas
+              // Kompetensi dan Bobot Tugas
               Row(
                 children: [
                   Expanded(
@@ -163,15 +220,15 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         labelText: "Bidang Kompetensi",
                         border: OutlineInputBorder(),
                       ),
-                      items: <String>['Web dev', 'Data Science', 'AI'].map((String value) {
+                      items: _bidangKompetensiOptions.map<DropdownMenuItem<String>>((dynamic value) {
                         return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
+                          value: value['kompetensi_id'].toString(),
+                          child: Text(value['kompetensi_nama']),
                         );
                       }).toList(),
                       onChanged: (newValue) {
                         setState(() {
-                          _bidangKompetensi = newValue!;
+                          _bidangKompetensi = newValue;
                         });
                       },
                     ),
@@ -184,7 +241,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         labelText: "Bobot Tugas",
                         border: OutlineInputBorder(),
                       ),
-                      items: <String>['1 Jam', '3 Jam', '5 Jam'].map((String value) {
+                      items: List.generate(10, (index) => '${index + 1} Jam').map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -201,25 +258,26 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               SizedBox(height: 16),
 
-              // Date Picker Tenggat Tugas
+              // Tenggat Tugas
               TextFormField(
                 readOnly: true,
                 decoration: InputDecoration(
                   labelText: "Tenggat Tugas",
                   border: OutlineInputBorder(),
                 ),
+                controller: TextEditingController(
+                  text: DateFormat('yyyy-MM-dd').format(_selectedDate),
+                ),
                 onTap: () => _selectDate(context),
               ),
               SizedBox(height: 16),
 
-              // Tombol Simpan & Batal
+              // Tombol Simpan dan Batal
               Row(
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        print('Tugas disimpan: ${_namaTugasController.text}');
-                      },
+                      onPressed: _saveTask,
                       child: Text("Simpan Tugas"),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
@@ -239,83 +297,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
                     ),
                   ),
                 ],
-              ),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Container(
-        width: 90,
-        height: 90,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.blueAccent,
-        ),
-        child: FloatingActionButton(
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          onPressed: () {
-             Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AddTaskPage()),
-            );
-          },
-          child: Icon(
-            Icons.add,
-            size: 50,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 5,
-        color: const Color(0xFF191970),
-        child: SizedBox(
-          height: 70,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.home, color: Colors.white, size: 30),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomeScreen()),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.access_time,
-                    color: Colors.white, size: 30),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => TaskApprovalPage()),
-                  );
-                },
-              ),
-              const SizedBox(width: 50),
-              IconButton(
-                icon: const Icon(Icons.mail, color: Colors.white, size: 30),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const NotifikasiPage()),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.person, color: Colors.white, size: 30),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const Profilescreen()),
-                  );
-                },
               ),
             ],
           ),

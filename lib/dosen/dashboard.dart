@@ -9,6 +9,7 @@ import 'ProfilePage.dart';
 import 'add_task_page.dart';
 import 'alpha_mahasiswa_page.dart ';
 import 'KompenMahasiswaPage.dart';
+import 'qr_code_page.dart';
 
 class HomeScreen extends StatelessWidget {
   final List<Task> tasks = [
@@ -122,6 +123,10 @@ class HomeScreen extends StatelessWidget {
                     iconSize: 90.0,
                     color: const Color(0xFF191970),
                     onPressed: () {
+                        Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => QRCodePage()),
+            );
                       // Tambahkan logika untuk scan QR
                     },
                   ),

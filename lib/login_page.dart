@@ -18,7 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final Dio dio = Dio();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final String urlLogin = "http://192.168.18.30:8000/api/login";
+  final String urlLogin = "http://192.168.194.83:8000/api/login";
 
   @override
   void dispose() {
