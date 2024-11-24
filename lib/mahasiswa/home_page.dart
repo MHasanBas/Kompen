@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
+import 'package:kompen/mahasiswa/qr_code_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'akumulasi_page.dart';
@@ -10,6 +11,7 @@ import 'history_screen.dart';
 import 'tasks_screen.dart';
 import 'notification_screen.dart';
 import 'ProfilePage.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -178,7 +180,12 @@ class _HomePageState extends State<HomePage> {
                       size: 90.0,
                     ),
                     onPressed: () {
-                      print("QR Code Button Pressed");
+                      Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            QRCodePage()), // Sesuaikan dengan nama kelas yang benar
+                  );
                     },
                   ),
                 ],
