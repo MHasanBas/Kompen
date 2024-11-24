@@ -49,6 +49,13 @@ dependencies:
   path: ^1.8.2
   qr_code_scanner: ^1.0.1
   flutter_launcher_icons: "^0.14.1"
+  path_provider: ^2.0.11
+  open_file: ^3.2.1
+  flutter_pdfview: ^1.0.0
+  pdf: ^3.8.1
+  printing: ^5.9.1
+  
+
 
 
 
