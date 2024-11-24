@@ -1,13 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'home_page.dart';
-import 'ProfilePage.dart';
-import 'notification_screen.dart';
-import 'history_screen.dart';
-import 'tasks_screen.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class AkumulasiPage extends StatelessWidget {
+class AkumulasiPage extends StatefulWidget {
   const AkumulasiPage({super.key});
+
+  @override
+  _AkumulasiPageState createState() => _AkumulasiPageState();
+}
+
+class _AkumulasiPageState extends State<AkumulasiPage> {
+  String userTotal = "Loading..."; // Kolom jumlah_alpa dari MahasiswaModel
+  String userJumlah = "Loading..."; // Menampilkan jumlah alpa dari AkumulasiModel
+  String userSemester = "Loading..."; // Kolom semester dari AkumulasiModel
+  List<dynamic> akumulasi = [];
+
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
+
+  final Dio _dio = Dio();
+
+  Future<void> fetchData() async {
+    try {
+      String? authToken = await getAuthToken();
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
+      final response = await _dio.post(
+        'http://192.168.194.83:8000/api/akumulasi', // Ubah endpoint ke API Akumulasi
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $authToken',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        
+        setState(() {
+          // Ambil kolom jumlah_alpa dari MahasiswaModel
+          userTotal = data['mahasiswa']['jumlah_alpa'].toString();
+          
+          // Ambil kolom jumlah_alpa dan semester dari AkumulasiModel
+          if (data['akumulasi'].isNotEmpty) {
+            userJumlah = data['akumulasi'][0]['jumlah_alpa'].toString(); // Ambil jumlah alpa dari AkumulasiModel
+            userSemester = data['akumulasi'][0]['semester'].toString(); // Ambil semester
+            akumulasi = data['akumulasi']; // Daftar akumulasi
+          } else {
+            userJumlah = "No data";
+            userSemester = "No data";
+          }
+        });
+      } else {
+        setState(() {
+          userTotal = "Failed to load data";
+          userJumlah = "Failed to load data";
+          userSemester = "Failed to load data";
+          akumulasi = [];
+        });
+      }
+    } catch (e) {
+      setState(() {
+        userTotal = "Error: $e";
+        userJumlah = "Error: $e";
+        userSemester = "Error: $e";
+        akumulasi = [];
+      });
+      print('Error: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData(); // Memanggil fetchData saat halaman diinisialisasi
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,86 +99,72 @@ class AkumulasiPage extends StatelessWidget {
         toolbarHeight: 89.0,
         automaticallyImplyLeading: false, // Hilangkan tombol kembali
       ),
-
-      // Mengubah warna background Scaffold menjadi #F9F9F9
       backgroundColor: const Color(0xFFF9F9F9),
-
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Container utama yang mencakup ikon jam dan semester
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              decoration: BoxDecoration(
-                color: Colors.white, // Warna background header
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.grey),
-              ),
+      body: userTotal == "Loading..." // Tampilkan loading saat data sedang dimuat
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Baris pertama: Jam, Arrow Up, Arrow Down
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildTimeInfo(Icons.access_time, "1000 Jam", "Alpha"),
-                      _buildTimeInfoWithLabel(
-                          Icons.arrow_upward, "+ 2 Jam", "Alpha",
-                          color: Colors.green),
-                      _buildTimeInfoWithLabel(
-                          Icons.arrow_downward, "- 5 Jam", "Alpha",
-                          color: Colors.red),
-                    ],
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildTimeInfo(Icons.access_time, "$userTotal Jam", "Alpha"),
+                            _buildTimeInfoWithLabel(
+                                Icons.arrow_upward, "+ X", "Alpha",
+                                color: Colors.red),
+                            _buildTimeInfoWithLabel(
+                                Icons.arrow_downward, "- Y", "Alpha",
+                                color: Colors.green),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        const Divider(color: Colors.grey),
+
+                        // List akumulasi per semester
+                        ...akumulasi.map((item) {
+                          return Column(
+                            children: [
+                              AkumulasiRow(
+                                semester: item['semester']?.toString() ?? 'Unknown',
+                                hours: "${item['jumlah_alpa']?.toString() ?? '0'} Jam",
+                              ),
+                              const Divider(color: Colors.grey),
+                            ],
+                          );
+                        }).toList(),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 20),
-                  const Divider(
-                      color: Colors
-                          .grey), // Divider garis antara header dan list semester
-
-                  // Bagian tabel akumulasi per semester dengan garis pemisah antar semester
-                  _buildSemesterRow("Semester 1", "16 Jam"),
-                  const Divider(color: Colors.grey),
-                  _buildSemesterRow("Semester 2", "12 Jam"),
-                  const Divider(color: Colors.grey),
-                  _buildSemesterRow("Semester 3", "12 Jam"),
-                  const Divider(color: Colors.grey),
-                  _buildSemesterRow("Semester 4", "12 Jam"),
-                  const Divider(color: Colors.grey),
-                  _buildSemesterRow("Semester 5", "12 Jam"),
-                  const Divider(color: Colors.grey),
-                  _buildSemesterRow("Semester 6", "12 Jam"),
-                  const Divider(color: Colors.grey),
-                  _buildSemesterRow("Semester 7", "12 Jam"),
-                  const Divider(color: Colors.grey),
-                  _buildSemesterRow("Semester 8", "12 Jam"),
+                  const Divider(),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      "Total Alpha = $userTotal Jam",
+                      style: GoogleFonts.poppins(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-
-            const SizedBox(height: 20),
-
-            // Bagian total akumulasi
-            const Divider(),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                "Total Alpha = 100 Jam",
-                style: GoogleFonts.poppins(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-
-      // Navigasi bawah mirip seperti HomePage
-       bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 5,
-        color: Colors.indigo[900], // Dark blue bottom bar
+        color: Colors.indigo[900],
         child: SizedBox(
           height: 70,
           child: Row(
@@ -115,80 +173,41 @@ class AkumulasiPage extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigate to home
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            HomePage()), // Ganti 'HomePage()' sesuai dengan class dari home_page.dart
-                  );
+                  Navigator.pop(context);
                 },
               ),
               IconButton(
-                icon: Icon(Icons.access_time,
-                    color: Colors.white,
-                    size: 30), // Warna icon putih dan ukuran lebih besar
-                onPressed: () {
-                  // Arahkan ke halaman Histori
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            HistoryScreen()), // Sesuaikan dengan nama kelas yang benar
-                  );
-                },
+                icon: const Icon(Icons.access_time, color: Colors.white, size: 30),
+                onPressed: () {},
               ),
-              SizedBox(width: 50), // Beri ruang lebih untuk tombol +
+              const SizedBox(width: 50),
               IconButton(
-                icon: Icon(Icons.mail,
-                    color: Colors.white,
-                    size: 30), // Warna icon putih dan ukuran lebih besar
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            NotificationScreen()), // Sesuaikan dengan nama kelas 'NotificationScreen'
-                  );
-                },
+                icon: const Icon(Icons.mail, color: Colors.white, size: 30),
+                onPressed: () {},
               ),
               IconButton(
                 icon: const Icon(Icons.person, color: Colors.white, size: 30),
-                onPressed: () {
-                   Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            ProfilePage()), // Sesuaikan dengan nama kelas 'NotificationScreen'
-                  );
-                  // Navigate to profile page
-                },
+                onPressed: () {},
               ),
             ],
           ),
         ),
       ),
       floatingActionButton: Container(
-        width: 90, // Ukuran lingkaran FAB lebih besar
-        height: 90, // Tinggi lingkaran FAB lebih besar
+        width: 90,
+        height: 90,
         decoration: BoxDecoration(
-          shape: BoxShape.circle, // Bentuk lingkaran penuh
-          color: Colors.blueAccent, // Warna biru lebih cerah
+          shape: BoxShape.circle,
+          color: Colors.blueAccent,
         ),
         child: FloatingActionButton(
-          elevation: 0, // Hapus elevation agar rata dengan lingkaran
-          backgroundColor: Colors
-              .transparent, // Jadikan background transparan agar tidak bertumpuk
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => TasksScreen()),
-            );
-          },
-          child: Icon(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          onPressed: () {},
+          child: const Icon(
             Icons.add,
-            size: 50, // Ukuran icon + lebih besar dari icon biasa
-            color: Colors.white, // Warna putih agar kontras
+            size: 50,
+            color: Colors.white,
           ),
         ),
       ),
@@ -196,8 +215,6 @@ class AkumulasiPage extends StatelessWidget {
     );
   }
 
-
-  // Fungsi untuk membuat tampilan dengan jam dan tulisan alpha di bawahnya
   Widget _buildTimeInfo(IconData icon, String time, String label) {
     return Column(
       children: [
@@ -223,7 +240,6 @@ class AkumulasiPage extends StatelessWidget {
     );
   }
 
-  // Fungsi untuk membuat icon dengan jam dan label "Alpha" di bawahnya
   Widget _buildTimeInfoWithLabel(IconData icon, String time, String label,
       {Color color = Colors.black}) {
     return Column(
@@ -246,27 +262,34 @@ class AkumulasiPage extends StatelessWidget {
       ],
     );
   }
+}
 
-  // Fungsi untuk membuat baris semester dengan garis pembatas
-  Widget _buildSemesterRow(String semester, String hours) {
-    return Padding(
-      padding:
-          const EdgeInsets.symmetric(vertical: 12.0), // Menambah jarak vertikal
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(
-                left: 8.0), // Menambah padding kiri pada semester
-            child: Text(semester, style: GoogleFonts.poppins(fontSize: 16)),
+class AkumulasiRow extends StatelessWidget {
+  final String semester;
+  final String hours;
+
+  const AkumulasiRow({super.key, required this.semester, required this.hours});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Text(
+            semester,
+            style: GoogleFonts.poppins(fontSize: 16),
           ),
-          Padding(
-            padding: const EdgeInsets.only(
-                right: 8.0), // Menambah padding kanan pada jam
-            child: Text(hours, style: GoogleFonts.poppins(fontSize: 16)),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: Text(
+            hours,
+            style: GoogleFonts.poppins(fontSize: 16),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

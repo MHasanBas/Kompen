@@ -83,7 +83,7 @@ class NotificationScreen extends StatelessWidget {
                     child: NotificationCard(
                       name: "Titis Octary S.",
                       message:
-                          "Permintaan Kompen merekap absensi diterima!\nMohon segera dikerjakan.",
+                          "Permintaan Kompen merekap absensi ditolak!\n cari pekerjaan lain.",
                       backgroundColor: Colors.white,
                     ),
                   ),
@@ -108,8 +108,8 @@ class NotificationScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => NotificationDetailScreen(
-                            title: "Permintaan Kompen merekap nilai ditolak",
-                            message: "Notifikasi dari Farid Angga P.",
+                            title: "tugas Kompen merekap nilai ditolak",
+                            message: "Notifikasi dari Farid Angga P , tugas kurang sesuai.",
                           ),
                         ),
                       );

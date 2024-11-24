@@ -51,7 +51,7 @@ class _AlphaMahasiswaPageState extends State<AlphaMahasiswaPage> {
 
   Future<List<Mahasiswa>> fetchMahasiswaAlpha() async {
     Dio dio = Dio();
-    final String apiUrl = 'http://192.168.122.83:8000/api/alpa'; // Replace with your API URL
+    final String apiUrl = 'http://192.168.194.83:8000/api/alpa'; // Replace with your API URL
 
     try {
       final response = await dio.post(

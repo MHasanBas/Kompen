@@ -4,26 +4,94 @@ import 'history_screen.dart';
 import 'tasks_screen.dart';
 import 'notification_screen.dart';
 import 'home_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
 
-class ProfilePage extends StatelessWidget {
+
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  String userName = "Loading...";
+  String userNim = "Loading...";
+  String userSemester = "Loading...";
+  String userProdi = "Loading...";
+  String userPhone = "Loading...";
+
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
+
+  final Dio _dio = Dio();
+
+  Future<void> fetchProfileData() async {
+    try {
+      String? authToken = await getAuthToken();
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
+      final response = await _dio.post(
+        'http://192.168.194.83:8000/api/profilemhs', // Ganti dengan endpoint API Anda
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $authToken',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        setState(() {
+          userName = data['mahasiswa_nama'] ?? "Nama tidak tersedia";
+          userNim = data['nim'] ?? "NIM tidak tersedia";
+          userSemester = "Semester ${data['semester']?.toString() ?? "tidak tersedia"}";
+          userProdi = data['prodi'] ?? "Prodi Tidak Tersedia";
+        });
+      } else {
+        setState(() {
+          userName = "Failed to load data";
+          userNim = "Failed to load data";
+          userSemester = "Failed to load data";
+          userProdi = "Failed to load data";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        userName = "Error: $e";
+        userNim = "Error: $e";
+        userSemester = "Error: $e";
+        userProdi = "Error: $e";
+      });
+      print('Error: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProfileData();
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text(
-          'Suka Kompen.',
-          style: GoogleFonts.poppins(
-            textStyle: const TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF191970),
-            ),
+        title: const Text(
+          'Suka Kompen',
+          style: TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF191970),
           ),
         ),
-        toolbarHeight: 89.0,
         automaticallyImplyLeading: false,
       ),
       backgroundColor: const Color(0xFFF9F9F9),
@@ -33,7 +101,7 @@ class ProfilePage extends StatelessWidget {
           children: [
             // Profile Card with full width
             Container(
-              width: double.infinity, // Set to full width
+              width: double.infinity,
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: const Color(0xFF001C72),
@@ -51,18 +119,18 @@ class ProfilePage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16.0),
-                  const Text(
-                    "Hasan",
-                    style: TextStyle(
+                  Text(
+                    userName,
+                    style: const TextStyle(
                       fontSize: 20.0,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const Text(
-                    "2241760069",
-                    style: TextStyle(
+                  Text(
+                    userNim,
+                    style: const TextStyle(
                       fontSize: 16.0,
                       color: Colors.white,
                     ),
@@ -82,14 +150,13 @@ class ProfilePage extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _buildInfoRow("Hasan Basri"),
+                  _buildInfoRow(userName),
                   _buildSeparator(),
-                  _buildInfoRow("2241760069"),
+                  _buildInfoRow(userNim),
                   _buildSeparator(),
-                  _buildInfoRow("Semester 5"),
+                  _buildInfoRow(userSemester),
                   _buildSeparator(),
-                  _buildInfoRow("085876345109",
-                      trailing: const Icon(Icons.edit)),
+                  _buildInfoRow(userProdi),
                   _buildSeparator(),
                   // Logout Button
                   GestureDetector(
@@ -258,7 +325,6 @@ class ProfilePage extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
-}
 
   Widget _buildInfoRow(String text, {Widget? trailing}) {
     return Padding(
@@ -286,4 +352,4 @@ class ProfilePage extends StatelessWidget {
       endIndent: 16,
     );
   }
-
+}

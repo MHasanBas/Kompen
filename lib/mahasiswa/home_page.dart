@@ -1,15 +1,82 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'akumulasi_page.dart'; // Impor AkumulasiPage
+import 'akumulasi_page.dart';
 import 'kompen_card.dart';
 import 'history_screen.dart';
 import 'tasks_screen.dart';
 import 'notification_screen.dart';
 import 'ProfilePage.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String userName = "Loading...";
+  String userNim = "Loading...";
+  String userTotal = "Loading...";
+  List<dynamic> tugas = [];
+
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
+
+  final Dio _dio = Dio();
+
+  Future<void> fetchData() async {
+    try {
+      String? authToken = await getAuthToken();
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
+      final response = await _dio.post(
+        'http://192.168.194.83:8000/api/dashboardmhs',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $authToken',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        setState(() {
+          userName = data['mahasiswa']['mahasiswa_nama'];
+          userNim = data['mahasiswa']['nim'];
+          userTotal = data['mahasiswa']['jumlah_alpa'].toString();
+          tugas = data['tugas'];
+        });
+      } else {
+        setState(() {
+          userName = "Failed to load data";
+          userNim = "Failed to load data";
+          tugas = [];
+        });
+      }
+    } catch (e) {
+      setState(() {
+        userName = "Error: $e";
+        userNim = "Error: $e";
+        tugas = [];
+      });
+      print('Error: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,48 +89,43 @@ class HomePage extends StatelessWidget {
             textStyle: const TextStyle(
               fontSize: 24.0,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF191970), // Dark Blue Color
+              color: Color(0xFF191970),
             ),
           ),
         ),
         toolbarHeight: 89.0,
-        automaticallyImplyLeading: false, // Remove back button
+        automaticallyImplyLeading: false,
       ),
-
-      // Mengubah warna background Scaffold menjadi #F9F9F9
       backgroundColor: const Color(0xFFF9F9F9),
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User Profile Card
             Container(
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: const Color(0xFF001C72), // Dark Blue Color from Figma
+                color: const Color(0xFF001C72),
                 borderRadius: BorderRadius.circular(12.0),
               ),
               child: Row(
                 children: [
-                  // Profile Icon
                   const CircleAvatar(
                     radius: 30.0,
                     backgroundColor: Colors.white,
                     child: Icon(
-                      Icons.person, // Placeholder icon for profile
+                      Icons.person,
                       size: 40.0,
-                      color: Color(0xFF001C72), // Match icon color to the card
+                      color: Color(0xFF001C72),
                     ),
                   ),
                   const SizedBox(width: 16.0),
-                  Expanded( // Gunakan Expanded untuk mengatur lebar otomatis
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Hasan", // User name from the Figma
+                          userName,
                           style: GoogleFonts.poppins(
                             textStyle: const TextStyle(
                               fontSize: 20.0,
@@ -73,7 +135,7 @@ class HomePage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          "2241760069", // NIM
+                          userNim,
                           style: GoogleFonts.poppins(
                             textStyle: const TextStyle(
                               fontSize: 16.0,
@@ -81,12 +143,13 @@ class HomePage extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8.0), // Beri jarak antara NIM dan tombol
+                        const SizedBox(height: 8.0),
                         ElevatedButton(
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => TasksScreen()),
+                              MaterialPageRoute(
+                                  builder: (context) => TasksScreen()),
                             );
                           },
                           style: ElevatedButton.styleFrom(
@@ -100,7 +163,7 @@ class HomePage extends StatelessWidget {
                           child: const Text(
                             "Yuk Kompen!",
                             style: TextStyle(
-                              color: Color(0xFF001C72), // Dark Blue Color
+                              color: Color(0xFF001C72),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -108,16 +171,13 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  // QR Code Button next to NIM
                   IconButton(
                     icon: const Icon(
-                      Icons.qr_code_scanner, // QR Code Icon
+                      Icons.qr_code_scanner,
                       color: Colors.white,
                       size: 90.0,
                     ),
                     onPressed: () {
-                      // Aksi saat tombol QR Code ditekan
                       print("QR Code Button Pressed");
                     },
                   ),
@@ -125,8 +185,6 @@ class HomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Akumulasi Kompen Section now navigates to AkumulasiPage
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -137,7 +195,7 @@ class HomePage extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF9F9F9), // Updated background color
+                  color: const Color(0xFFF9F9F9),
                   borderRadius: BorderRadius.circular(12.0),
                   boxShadow: [
                     BoxShadow(
@@ -153,23 +211,23 @@ class HomePage extends StatelessWidget {
                     Row(
                       children: [
                         const Icon(
-                          Icons.access_time, // Clock Icon
+                          Icons.access_time,
                           color: Color(0xFF191970),
                           size: 30.0,
                         ),
                         const SizedBox(width: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             Text(
-                              "1000 Jam",
-                              style: TextStyle(
+                              "$userTotal Jam", // Menggabungkan userTotal dengan teks "Jam"
+                              style: const TextStyle(
                                 fontSize: 18.0,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF191970), // Text color
+                                color: Color(0xFF191970),
                               ),
                             ),
-                            Text(
+                            const Text(
                               "Alpha",
                               style: TextStyle(
                                 color: Color(0xFF191970),
@@ -184,9 +242,9 @@ class HomePage extends StatelessWidget {
                         Column(
                           children: const [
                             Text(
-                              "+2 Jam",
+                              "+x Jam",
                               style: TextStyle(
-                                color: Colors.green,
+                                color: Colors.red,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -194,7 +252,7 @@ class HomePage extends StatelessWidget {
                             Text(
                               "Alpha",
                               style: TextStyle(
-                                color: Colors.green,
+                                color: Colors.red,
                               ),
                             ),
                           ],
@@ -203,9 +261,9 @@ class HomePage extends StatelessWidget {
                         Column(
                           children: const [
                             Text(
-                              "-5 Jam",
+                              "-y Jam",
                               style: TextStyle(
-                                color: Colors.red,
+                                color: Colors.green,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -213,7 +271,7 @@ class HomePage extends StatelessWidget {
                             Text(
                               "Alpha",
                               style: TextStyle(
-                                color: Colors.red,
+                                color: Colors.green,
                               ),
                             ),
                           ],
@@ -225,38 +283,35 @@ class HomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Rekomendasi Kompen Section
             Text(
               "Rekomendasi Kompen",
               style: GoogleFonts.poppins(
                 textStyle: const TextStyle(
                   fontSize: 18.0,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF191970), // Dark Blue Color
+                  color: Color(0xFF191970),
                 ),
               ),
             ),
             const SizedBox(height: 10),
-
-            // Kompen Cards with task description
-            KompenCard(
-              title: "Arsip Absensi",
-              hours: "-14 Jam",
-              description: "Menunjukkan status absensi dan jam kehadiran.",
-              icon: Icons.archive, // Ikon untuk arsip absensi
-            ),
-
-            KompenCard(
-              title: "Rekap Nilai",
-              hours: "-10 Jam",
-              description: "Melihat rekap hasil penilaian dari setiap tugas.",
-              icon: Icons.assessment, // Ikon untuk rekap nilai
+            Expanded(
+              child: ListView.builder(
+                itemCount: tugas.length,
+                itemBuilder: (context, index) {
+                  final item = tugas[index];
+                  return KompenCard(
+                    title: item['tugas_nama'] ?? "Tidak ada nama",
+                    hours: "${item['tugas_jam_kompen'] ?? 0} Jam",
+                    description: item['tugas_deskripsi'] ?? "Deskripsi kosong",
+                    icon: Icons.task,
+                  );
+                },
+              ),
             ),
           ],
         ),
       ),
-     bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 5,
         color: Colors.indigo[900], // Dark blue bottom bar
