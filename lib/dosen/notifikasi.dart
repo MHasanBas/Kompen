@@ -2,11 +2,64 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kompen/dosen/ProfilePage.dart';
 import 'package:kompen/dosen/task_approval_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'Cek_Tugas.dart'; 
 import 'add_task_page.dart';
+import 'package:dio/dio.dart';
 
-class NotifikasiPage extends StatelessWidget {
+class NotifikasiPage extends StatefulWidget {
   const NotifikasiPage({super.key});
+
+  @override
+  _NotifikasiPageState createState() => _NotifikasiPageState();
+}
+
+class _NotifikasiPageState extends State<NotifikasiPage> {
+  List<dynamic> tugasList = [];
+
+  bool isLoading = true;
+
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
+
+  Future<void> fetchNotifications() async {
+    try {
+      String? authToken = await getAuthToken();
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
+      Dio dio = Dio();
+      dio.options.headers['Authorization'] = 'Bearer $authToken';
+      final response = await dio.post(
+        'http://192.168.18.30:8000/api/cek_tugas',
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          tugasList = response.data;
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        print('Failed to fetch data');
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false; 
+      });
+      print('Error: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchNotifications(); 
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,94 +96,101 @@ class NotifikasiPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                itemCount: 3, // Number of notifications (can be dynamic)
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10.0),
-                    child: Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: Colors.blue[100],
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Image.asset(
-                                'assets/images/notification_icon.png', // Replace with your icon image
-                                fit: BoxFit.cover,
-                              ),
+            // Show loading indicator while fetching data
+            isLoading
+                ? Center(child: CircularProgressIndicator())
+                : Expanded(
+                    child: ListView.builder(
+                      itemCount: tugasList.length, // Dynamic item count
+                      itemBuilder: (context, index) {
+                        var tugasItem = tugasList[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10.0),
+                          child: Card(
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Row(
                                 children: [
-                                  Text(
-                                    'Membuat PPT',
-                                    style: GoogleFonts.poppins(
-                                      textStyle: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                  Container(
+                                    width: 60,
+                                    height: 60,
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue[100],
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Image.asset(
+                                      '/images/task_image.png', // Replace with your icon image
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Faiz Abiyu\nMembuat Power Point presentasi mata kuliah',
-                                    style: GoogleFonts.poppins(
-                                      textStyle: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black54,
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          tugasItem['tugas']['tugas_nama'] ?? 'Nama Tugas Tidak Ditemukan',
+                                          style: GoogleFonts.poppins(
+                                            textStyle: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '${tugasItem['approval'][0]['dosen_name'] ?? 'Unknown'}\n${tugasItem['tugas']['tugas_deskripsi'] ?? 'No Description'}',
+                                          style: GoogleFonts.poppins(
+                                            textStyle: const TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.black54,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      var approvalId = tugasItem['approval'][0]['approval_id'];
+                                      var progressId = tugasItem['approval'][0]['progress_id'];
+                                      var tugasId = tugasItem['tugas']['tugas_id']; 
+
+                                      print('Fetching data for tugasId: $tugasId and approvalId: $approvalId and progressId: $progressId');
+
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => CekTugasPage(
+                                            tugasId: tugasId,
+                                            approvalId: approvalId,
+                                            progressId: progressId
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      'Cek Tugas',
+                                      style: GoogleFonts.poppins(
+                                        textStyle: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.amber,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              onPressed: () {
-                                // Navigasi ke halaman CekTugasPage
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const CekTugasPage(),
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                'Cek Tugas',
-                                style: GoogleFonts.poppins(
-                                  textStyle: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            ),
+                  ),
           ],
         ),
       ),
@@ -150,10 +210,8 @@ class NotifikasiPage extends StatelessWidget {
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.access_time,
-                    color: Colors.white, size: 30),
+                icon: const Icon(Icons.access_time, color: Colors.white, size: 30),
                 onPressed: () {
-
                   Navigator.push(context, MaterialPageRoute(builder: (context) => TaskApprovalPage()));
                 },
               ),

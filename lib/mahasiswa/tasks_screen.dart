@@ -5,7 +5,7 @@ import 'task_detail_screen.dart';
 final Dio dio = Dio(); // Inisialisasi Dio untuk HTTP request
 
 // URL API
-final String baseUrl = "http://192.168.194.83:8000/api/tugas";
+final String baseUrl = "http://192.168.18.30:8000/api/tugas";
 
 class TasksScreen extends StatefulWidget {
   @override

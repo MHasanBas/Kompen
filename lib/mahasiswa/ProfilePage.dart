@@ -37,7 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
       }
 
       final response = await _dio.post(
-        'http://192.168.194.83:8000/api/profilemhs', // Ganti dengan endpoint API Anda
+        'http://192.168.18.30:8000/api/profilemhs', // Ganti dengan endpoint API Anda
         options: Options(
           headers: {
             'Authorization': 'Bearer $authToken',
