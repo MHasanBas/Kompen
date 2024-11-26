@@ -1,11 +1,71 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'add_task_page.dart';
 import 'task_approval_page.dart';
 import 'notifikasi.dart';
 import 'dashboard.dart';
 import 'ProfilePage.dart';
 
-class KompenMahasiswaPage extends StatelessWidget {
+class ApiService {
+  final Dio _dio;
+
+  ApiService(this._dio);
+
+  Future<Response> getKompenData(String authToken) async {
+    try {
+      Response response = await _dio.post(
+        '/kompen',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $authToken',
+          },
+        ),
+      );
+      return response;
+    } catch (e) {
+      return Future.error(e);
+    }
+  }
+}
+
+class KompenMahasiswaPage extends StatefulWidget {
+  @override
+  _KompenMahasiswaPageState createState() => _KompenMahasiswaPageState();
+}
+
+class _KompenMahasiswaPageState extends State<KompenMahasiswaPage> {
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.194.83:8000/api'));
+  late ApiService _apiService;
+  List<dynamic> _tasks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _apiService = ApiService(_dio);
+    _fetchTasks();
+  }
+
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
+
+  Future<void> _fetchTasks() async {
+    try {
+      String? authToken = await getAuthToken();
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+      Response response = await _apiService.getKompenData(authToken);
+      setState(() {
+        _tasks = response.data;
+      });
+    } catch (e) {
+      print("Failed to fetch tasks: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,14 +216,8 @@ class KompenMahasiswaPage extends StatelessWidget {
   }
 
   List<Widget> _buildTableRows() {
-    final data = [
-      ['1.', '2241760139', 'Faiz Abiyu', 'Mengaji', '1', 'Selesai'],
-      ['2.', '2241760139', 'Faiz Abiyu', 'Mengaji', '2', 'Belum Selesai'],
-      ['3.', '2241760139', 'Faiz Abiyu', 'Mengaji', '1', 'Selesai'],
-    ];
-
     return List.generate(
-      data.length,
+      _tasks.length,
       (index) => Column(
         children: [
           Container(
@@ -173,19 +227,20 @@ class KompenMahasiswaPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
             child: Row(
               children: [
-                Expanded(flex: 1, child: _TableRowCell(text: data[index][0])),
-                Expanded(flex: 2, child: _TableRowCell(text: data[index][1])),
-                Expanded(flex: 2, child: _TableRowCell(text: data[index][2])),
-                Expanded(flex: 2, child: _TableRowCell(text: data[index][3])),
-                Expanded(flex: 1, child: _TableRowCell(text: data[index][4])),
+                Expanded(flex: 1, child: _TableRowCell(text: (index + 1).toString())),
+                Expanded(flex: 2, child: _TableRowCell(text: _tasks[index]['mahasiswa']['nim'])),
+                Expanded(flex: 2, child: _TableRowCell(text: _tasks[index]['mahasiswa']['mahasiswa_nama'])),
+                Expanded(flex: 2, child: _TableRowCell(text: _tasks[index]['tugas']['tugas_nama'])),
+                Expanded(flex: 1, child: _TableRowCell(text: _tasks[index]['tugas']['tugas_jam_kompen'].toString())),
                 Expanded(
                   flex: 2,
                   child: _TableRowCell(
-                    icon: data[index][5] == 'Selesai'
+                    icon: _tasks[index]['status'] == 1
                         ? Icons.check_circle
                         : Icons.cancel,
-                    color:
-                        data[index][5] == 'Selesai' ? Colors.green : Colors.red,
+                    color: _tasks[index]['status'] == 1
+                        ? Colors.green
+                        : Colors.red,
                   ),
                 ),
               ],
@@ -216,7 +271,6 @@ class _TableHeaderCell extends StatelessWidget {
     );
   }
 }
-
 class _TableRowCell extends StatelessWidget {
   final String? text;
   final IconData? icon;
