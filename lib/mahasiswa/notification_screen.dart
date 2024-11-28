@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'http://192.168.18.30:8000', // Ganti dengan IP server Anda
+      baseUrl: 'http://192.168.194.83:8000', // Ganti dengan IP server Anda
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

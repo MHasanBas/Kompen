@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kompen/dosen/ProfilePage.dart';
 import 'package:kompen/dosen/task_approval_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'Cek_Tugas.dart'; 
+import 'Cek_Tugas.dart';
 import 'add_task_page.dart';
 import 'package:dio/dio.dart';
 
@@ -16,7 +16,6 @@ class NotifikasiPage extends StatefulWidget {
 
 class _NotifikasiPageState extends State<NotifikasiPage> {
   List<dynamic> tugasList = [];
-
   bool isLoading = true;
 
   Future<String?> getAuthToken() async {
@@ -34,7 +33,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
       Dio dio = Dio();
       dio.options.headers['Authorization'] = 'Bearer $authToken';
       final response = await dio.post(
-        'http://192.168.18.30:8000/api/cek_tugas',
+        'http://192.168.194.83:8000/api/cek_tugas',
       );
       if (response.statusCode == 200) {
         setState(() {
@@ -49,7 +48,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
       }
     } catch (e) {
       setState(() {
-        isLoading = false; 
+        isLoading = false;
       });
       print('Error: $e');
     }
@@ -58,7 +57,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
   @override
   void initState() {
     super.initState();
-    fetchNotifications(); 
+    fetchNotifications();
   }
 
   @override
@@ -72,7 +71,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
             textStyle: const TextStyle(
               fontSize: 24.0,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF191970), // Dark Blue Color
+              color: Color(0xFF191970),
             ),
           ),
         ),
@@ -95,13 +94,11 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 10),
-            // Show loading indicator while fetching data
             isLoading
-                ? Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator())
                 : Expanded(
                     child: ListView.builder(
-                      itemCount: tugasList.length, // Dynamic item count
+                      itemCount: tugasList.length,
                       itemBuilder: (context, index) {
                         var tugasItem = tugasList[index];
                         return Padding(
@@ -123,17 +120,19 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Image.asset(
-                                      '/images/task_image.png', // Replace with your icon image
+                                      '/images/task_image.png',
                                       fit: BoxFit.cover,
                                     ),
                                   ),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          tugasItem['tugas']['tugas_nama'] ?? 'Nama Tugas Tidak Ditemukan',
+                                          tugasItem['tugas']['tugas_nama'] ??
+                                              'Nama Tugas Tidak Ditemukan',
                                           style: GoogleFonts.poppins(
                                             textStyle: const TextStyle(
                                               fontSize: 16,
@@ -155,21 +154,35 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                                     ),
                                   ),
                                   ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange, // Warna tombol
+                                      foregroundColor: Colors.white, // Warna teks
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
+                                    ),
                                     onPressed: () {
-                                      var approvalId = tugasItem['approval'][0]['approval_id'];
-                                      var progressId = tugasItem['approval'][0]['progress_id'];
-                                      var tugasId = tugasItem['tugas']['tugas_id']; 
+                                      var approvalId = tugasItem['approval'][0]
+                                          ['approval_id'];
+                                      var progressId = tugasItem['approval'][0]
+                                          ['progress_id'];
+                                      var tugasId = tugasItem['tugas']
+                                          ['tugas_id'];
 
-                                      print('Fetching data for tugasId: $tugasId and approvalId: $approvalId and progressId: $progressId');
+                                      print(
+                                          'Fetching data for tugasId: $tugasId and approvalId: $approvalId and progressId: $progressId');
 
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => CekTugasPage(
-                                            tugasId: tugasId,
-                                            approvalId: approvalId,
-                                            progressId: progressId
-                                          ),
+                                              tugasId: tugasId,
+                                              approvalId: approvalId,
+                                              progressId: progressId),
                                         ),
                                       );
                                     },
@@ -179,6 +192,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                                         textStyle: const TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
+                                          fontSize: 14,
                                         ),
                                       ),
                                     ),
@@ -206,13 +220,17 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
               IconButton(
                 icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.pop(context); // Navigate back to HomePage
+                  Navigator.pop(context);
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.access_time, color: Colors.white, size: 30),
+                icon:
+                    const Icon(Icons.access_time, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => TaskApprovalPage()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => TaskApprovalPage()));
                 },
               ),
               const SizedBox(width: 50),
@@ -221,19 +239,17 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            const NotifikasiPage()), // Open NotifikasiPage
+                    MaterialPageRoute(builder: (context) => const NotifikasiPage()),
                   );
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.person, color: Colors.white, size: 30),
+                icon:
+                    const Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => const Profilescreen()),
+                    MaterialPageRoute(builder: (context) => const Profilescreen()),
                   );
                 },
               ),

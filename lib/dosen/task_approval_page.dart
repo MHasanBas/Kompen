@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'add_task_page.dart';
+import 'notifikasi.dart';
+import 'ProfilePage.dart';
+import 'dashboard.dart';
 
 final Dio dio = Dio();
 
 String url_domain = "http://192.168.194.83:8000";
-String url_approval_data = url_domain + "/api/apply_mahasiswa";
-String url_acc_data = url_domain + "/api/acc";
-String url_decline_data = url_domain + "/api/decline";
+String url_approval_data = "$url_domain/api/apply_mahasiswa";
+String url_acc_data = "$url_domain/api/acc";
+String url_decline_data = "$url_domain/api/decline";
 
 class TaskApprovalPage extends StatefulWidget {
   @override
@@ -16,7 +21,7 @@ class TaskApprovalPage extends StatefulWidget {
 
 class _TaskApprovalPageState extends State<TaskApprovalPage> {
   List<Map<String, dynamic>> tasks = [];
-  
+
   Future<String?> getAuthToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('auth_token');
@@ -28,7 +33,6 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
     fetchTasks();
   }
 
-  // Fetch tasks from the API
   Future<void> fetchTasks() async {
     try {
       String? authToken = await getAuthToken();
@@ -37,7 +41,7 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
       }
 
       final response = await dio.post(
-        url_approval_data, 
+        url_approval_data,
         options: Options(
           headers: {'Authorization': 'Bearer $authToken'},
         ),
@@ -65,16 +69,20 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
       final String url = isApproved ? url_acc_data : url_decline_data;
 
       final response = await dio.post(
-          url,
-          data: {'apply_id': applyId},
-          options: Options(
-            headers: {'Authorization': 'Bearer $authToken'},
-          ),
-        );
+        url,
+        data: {'apply_id': applyId},
+        options: Options(
+          headers: {'Authorization': 'Bearer $authToken'},
+        ),
+      );
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Application ${isApproved ? 'approved' : 'rejected'} successfully!')),
+          SnackBar(
+            content: Text(
+              'Application ${isApproved ? 'approved' : 'rejected'} successfully!',
+            ),
+          ),
         );
         fetchTasks();
       } else {
@@ -82,7 +90,9 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
       }
     } catch (e) {
       print('Error updating status: $e');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update status')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update status')),
+      );
     }
   }
 
@@ -91,22 +101,36 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0,
-        title: Row(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Text(
-                "Task Approval",
-                style: TextStyle(
+            Text(
+              'Suka Kompen.',
+              style: GoogleFonts.poppins(
+                textStyle: const TextStyle(
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF191970),
+                ),
+              ),
+            ),
+            const SizedBox(height: 38),
+            Text(
+              'Approval Page',
+              style: GoogleFonts.poppins(
+                textStyle: const TextStyle(
+                  fontSize: 18.0,
                   fontWeight: FontWeight.bold,
-                  color: Colors.indigo[900],
-                  fontSize: 24,
+                  color: Colors.black54,
                 ),
               ),
             ),
           ],
         ),
+        toolbarHeight: 89.0,
+        automaticallyImplyLeading: false,
       ),
+      backgroundColor: const Color(0xFFF9F9F9),
       body: ListView.builder(
         itemCount: tasks.length,
         itemBuilder: (context, index) {
@@ -115,11 +139,15 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
           final apply = task['apply'][0];
 
           return Card(
-            margin: EdgeInsets.all(10),
+            margin: const EdgeInsets.all(10),
             child: ListTile(
-              contentPadding: EdgeInsets.all(10),
-              leading: Icon(Icons.assignment, size: 50),
-              title: Text(tugas != null && tugas['tugas_nama'] != null ? tugas['tugas_nama'] : 'Nama Tugas Tidak Ditemukan'),
+              contentPadding: const EdgeInsets.all(10),
+              leading: const Icon(Icons.assignment, size: 50),
+              title: Text(
+                tugas != null && tugas['tugas_nama'] != null
+                    ? tugas['tugas_nama']
+                    : 'Nama Tugas Tidak Ditemukan',
+              ),
               subtitle: Text(
                 '${tugas != null && tugas['nama'] != null ? tugas['nama'] : 'Unknown user'} - '
                 'Status: ${apply != null && apply['apply_status'] != null ? apply['apply_status'] : 'Pending'}',
@@ -128,15 +156,15 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.close, color: Colors.red),
+                    icon: const Icon(Icons.close, color: Colors.red),
                     onPressed: () {
-                      updateStatus(apply['apply_id'], false); // Decline task (false)
+                      updateStatus(apply['apply_id'], false); // Decline task
                     },
                   ),
                   IconButton(
-                    icon: Icon(Icons.check, color: Colors.green),
+                    icon: const Icon(Icons.check, color: Colors.green),
                     onPressed: () {
-                      updateStatus(apply['apply_id'], true); // Approve task (true)
+                      updateStatus(apply['apply_id'], true); // Approve task
                     },
                   ),
                 ],
@@ -145,11 +173,61 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
           );
         },
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 5,
+        color: Colors.indigo[900],
+        child: SizedBox(
+          height: 70,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.home, color: Colors.white, size: 30),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.access_time,
+                    color: Colors.white, size: 30),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TaskApprovalPage()),
+                  );
+                },
+              ),
+              const SizedBox(width: 50),
+              IconButton(
+                icon: const Icon(Icons.mail, color: Colors.white, size: 30),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NotifikasiPage()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.person, color: Colors.white, size: 30),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Profilescreen()),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
       floatingActionButton: Container(
         width: 90,
         height: 90,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.blueAccent,
         ),
@@ -157,53 +235,19 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
           elevation: 0,
           backgroundColor: Colors.transparent,
           onPressed: () {
-            // Navigate to Add Task page
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddTaskPage()),
+            );
           },
-          child: Icon(
+          child: const Icon(
             Icons.add,
             size: 50,
             color: Colors.white,
           ),
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        notchMargin: 8,
-        color: Colors.indigo[900],
-        child: Container(
-          height: 70,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              IconButton(
-                icon: Icon(Icons.home, color: Colors.white, size: 30),
-                onPressed: () {
-                  // Navigate to Home page
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.access_time, color: Colors.white, size: 30),
-                onPressed: () {
-                  // Navigate to Task Approval page
-                },
-              ),
-              SizedBox(width: 50),
-              IconButton(
-                icon: Icon(Icons.mail, color: Colors.white, size: 30),
-                onPressed: () {
-                  // Navigate to Notifications page
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.person, color: Colors.white, size: 30),
-                onPressed: () {
-                  // Navigate to Profile page
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
