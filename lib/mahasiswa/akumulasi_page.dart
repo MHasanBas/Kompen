@@ -31,7 +31,7 @@ class _AkumulasiPageState extends State<AkumulasiPage> {
       }
 
       final response = await _dio.post(
-        'http://192.168.194.83:8000/api/akumulasi', // Ubah endpoint ke API Akumulasi
+        'http://192.168.236.83:8000/api/akumulasi', // Ubah endpoint ke API Akumulasi
         options: Options(
           headers: {
             'Authorization': 'Bearer $authToken',

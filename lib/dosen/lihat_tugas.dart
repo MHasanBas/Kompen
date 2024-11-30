@@ -6,6 +6,7 @@ import 'ProfilePage.dart';
 import 'task_approval_page.dart';
 import 'notifikasi.dart';
 import 'add_task_page.dart';
+import 'dashboard.dart';
 
 class LihatTugasPage extends StatefulWidget {
   const LihatTugasPage({Key? key}) : super(key: key);
@@ -17,7 +18,7 @@ class LihatTugasPage extends StatefulWidget {
 class _LihatTugasPageState extends State<LihatTugasPage> {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: "http://192.168.194.83:8000/api", // Ganti dengan URL backend Laravel Anda
+      baseUrl: "http://192.168.236.83:8000/api", // Ganti dengan URL backend Laravel Anda
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
@@ -222,26 +223,26 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
                                               ),
                                             ),
                                             const SizedBox(height: 8),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                const Text(
-                                                  'Offline',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.red,
-                                                  ),
+                                           // In the ListView.builder, update the task display section
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                tugas['tugas_tipe'] == 'online' ? 'Online' : 'Offline', 
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: tugas['tugas_tipe'] == 'online' ? Colors.green : Colors.red,
                                                 ),
-                                                Text(
-                                                  '-${tugas['durasi'] ?? '0'} Jam',
-                                                  style: const TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.red,
-                                                  ),
+                                              ),
+                                              Text(
+                                                '-${tugas['tugas_jam_kompen'] ?? '0'} Jam',
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.red,
                                                 ),
-                                              ],
-                                            ),
+                                              ),
+                                            ],
+                                          ),
                                           ],
                                         ),
                                       ),
@@ -268,7 +269,12 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
               IconButton(
                 icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.pop(context); // Navigate back to HomePage
+                 Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                             HomeScreen()), // Open NotifikasiPage
+                  );
                 },
               ),
               IconButton(

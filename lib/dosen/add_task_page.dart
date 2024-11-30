@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path_helper;
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'lihat_tugas.dart';
+import 'dashboard.dart';
+import 'notifikasi.dart';
+import 'task_approval_page.dart';
+import 'ProfilePage.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AddTaskPage extends StatefulWidget {
   @override
@@ -23,7 +30,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   List<dynamic> _jenisTugasOptions = [];
   List<dynamic> _bidangKompetensiOptions = [];
 
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.194.83:8000/api'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.236.83:8000/api'));
 
   @override
   void initState() {
@@ -41,7 +48,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
         _bidangKompetensiOptions = bidangKompetensiResponse.data;
       });
     } on DioError catch (e) {
-      print('Error: ${e.response?.statusCode} ${e.response?.data}');
+      _showErrorAlert('Gagal memuat pilihan: ${e.response?.data}');
     }
   }
 
@@ -60,7 +67,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 
   Future<void> _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'pptx'],
+    );
     if (result != null) {
       setState(() {
         _filePath = result.files.single.path;
@@ -68,47 +78,119 @@ class _AddTaskPageState extends State<AddTaskPage> {
     }
   }
 
-  Future<void> _addTask(Map<String, dynamic> taskData) async {
+  Future<void> _addTask(Map<String, dynamic> taskData, BuildContext context) async {
     try {
       FormData formData = FormData.fromMap(taskData);
+      
       if (_filePath != null) {
         formData.files.add(
           MapEntry(
-            "file",
-            await MultipartFile.fromFile(_filePath!, filename: basename(_filePath!)),
+            "file_tugas",
+            await MultipartFile.fromFile(_filePath!, filename: path_helper.basename(_filePath!)),
           ),
         );
+      } else {
+        _showErrorAlert('Silakan pilih file terlebih dahulu');
+        return;
       }
+
       final response = await _dio.post('/tugas_dosen/create_data', data: formData);
-      print('Response status: ${response.statusCode}');
-      print('Response data: ${response.data}');
+      
+      _showSuccessAlert(context);
+
     } on DioError catch (e) {
       print('Error: ${e.response?.statusCode} ${e.response?.data}');
+      _showErrorAlert('Gagal menambahkan tugas: ${e.response?.data['message'] ?? 'Terjadi kesalahan'}');
     }
   }
 
-  void _saveTask() async {
+  void _showSuccessAlert(BuildContext context) {
+    Alert(
+      context: context,
+      type: AlertType.success,
+      title: "Berhasil",
+      desc: "Tugas berhasil ditambahkan",
+      buttons: [
+        DialogButton(
+          child: Text(
+            "OK",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context, 
+              MaterialPageRoute(builder: (context) => LihatTugasPage())
+            );
+          },
+          width: 120,
+        )
+      ],
+    ).show();
+  }
+
+  void _showErrorAlert(String message) {
+    Alert(
+      context: context,
+      type: AlertType.error,
+      title: "Error",
+      desc: message,
+      buttons: [
+        DialogButton(
+          child: Text(
+            "OK",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: () => Navigator.pop(context),
+          width: 120,
+        )
+      ],
+    ).show();
+  }
+
+  void _saveTask() {
+    if (_namaTugasController.text.isEmpty) {
+      _showErrorAlert('Nama Tugas harus diisi');
+      return;
+    }
+
+    if (_jenisTugas == null) {
+      _showErrorAlert('Jenis Tugas harus dipilih');
+      return;
+    }
+
     final Map<String, dynamic> taskData = {
       'user_id': 1, // Replace with actual user ID
       'tugas_nama': _namaTugasController.text,
-      'tugas_No': 'unique_task_id', // Replace with actual logic to generate unique ID
+      'tugas_No': DateTime.now().millisecondsSinceEpoch.toString(),
       'jenis_id': _jenisTugas,
       'tugas_tipe': _tipeTugas,
       'tugas_deskripsi': _deskripsiTugasController.text,
-      'tugas_kuota': 1, // Replace with actual data
-      'tugas_jam_kompen': int.parse(_bobotTugas.split(' ')[0]), // Extract the numerical value
+      'tugas_kuota': 1,
+      'tugas_jam_kompen': int.parse(_bobotTugas.split(' ')[0]),
       'tugas_tenggat': DateFormat('yyyy-MM-dd').format(_selectedDate),
       'kompetensi_id': _bidangKompetensi,
     };
 
-    await _addTask(taskData);
+    _addTask(taskData, context);
   }
 
   @override
-  Widget build(BuildContext context) {
+Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Suka Kompen"),
+        automaticallyImplyLeading: false,
+        title: Text(
+          'Suka Kompen.',
+          style: GoogleFonts.poppins(
+            textStyle: const TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF191970),
+            ),
+          ),
+        ),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+        toolbarHeight: 90,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -116,7 +198,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Input Nama Tugas
               TextField(
                 controller: _namaTugasController,
                 decoration: InputDecoration(
@@ -127,7 +208,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               SizedBox(height: 16),
 
-              // Input Deskripsi Tugas
               TextField(
                 controller: _deskripsiTugasController,
                 maxLines: 4,
@@ -139,7 +219,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               SizedBox(height: 16),
 
-              // Upload File
               Text("Upload File"),
               Row(
                 children: [
@@ -150,7 +229,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                         border: Border.all(color: Colors.grey),
                         borderRadius: BorderRadius.circular(5),
                       ),
-                      child: Center(child: Text(_filePath != null ? basename(_filePath!) : "file")),
+                      child: Center(child: Text(_filePath != null ? path_helper.basename(_filePath!) : "Pilih file")),
                     ),
                   ),
                   IconButton(
@@ -162,7 +241,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
               Text(".pdf .doc .xls .xlsx .pptx", style: TextStyle(color: Colors.grey)),
               SizedBox(height: 16),
 
-              // Tipe dan Jenis Tugas
               Row(
                 children: [
                   Expanded(
@@ -210,7 +288,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               SizedBox(height: 16),
 
-              // Kompetensi dan Bobot Tugas
               Row(
                 children: [
                   Expanded(
@@ -258,7 +335,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               SizedBox(height: 16),
 
-              // Tenggat Tugas
               TextFormField(
                 readOnly: true,
                 decoration: InputDecoration(
@@ -272,7 +348,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
               SizedBox(height: 16),
 
-              // Tombol Simpan dan Batal
               Row(
                 children: [
                   Expanded(
@@ -302,6 +377,86 @@ class _AddTaskPageState extends State<AddTaskPage> {
           ),
         ),
       ),
+        bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 5,
+        color: Colors.indigo[900],
+        child: SizedBox(
+          height: 70,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.home, color: Colors.white, size: 30),
+                onPressed: () {
+                 Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                             HomeScreen()), // Open NotifikasiPage
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.access_time,
+                    color: Colors.white, size: 30),
+                onPressed: () {
+
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => TaskApprovalPage()));
+                },
+              ),
+              const SizedBox(width: 50),
+              IconButton(
+                icon: const Icon(Icons.mail, color: Colors.white, size: 30),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            const NotifikasiPage()), // Open NotifikasiPage
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.person, color: Colors.white, size: 30),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const Profilescreen()),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      floatingActionButton: Container(
+        width: 90,
+        height: 90,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.blueAccent,
+        ),
+        child: FloatingActionButton(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddTaskPage()),
+            );
+          },
+          child: const Icon(
+            Icons.add,
+            size: 50,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
+
+ 

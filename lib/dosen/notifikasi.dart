@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kompen/dosen/ProfilePage.dart';
+import 'package:kompen/dosen/dashboard.dart';
 import 'package:kompen/dosen/task_approval_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Cek_Tugas.dart';
@@ -33,7 +34,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
       Dio dio = Dio();
       dio.options.headers['Authorization'] = 'Bearer $authToken';
       final response = await dio.post(
-        'http://192.168.194.83:8000/api/cek_tugas',
+        'http://192.168.236.83:8000/api/cek_tugas',
       );
       if (response.statusCode == 200) {
         setState(() {
@@ -220,7 +221,10 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
               IconButton(
                 icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.pop(context);
+                 Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => HomeScreen()));
                 },
               ),
               IconButton(

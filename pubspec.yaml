@@ -54,6 +54,7 @@ dependencies:
   flutter_pdfview: ^1.0.0
   pdf: ^3.8.1
   printing: ^5.9.1
+  rflutter_alert: ^2.0.4
 
 
 

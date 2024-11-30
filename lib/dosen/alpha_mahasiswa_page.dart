@@ -5,12 +5,13 @@ import 'add_task_page.dart';
 import 'task_approval_page.dart';
 import 'notifikasi.dart';
 import 'dashboard.dart';  // Ensure this is properly imported
+import 'package:google_fonts/google_fonts.dart';
 
 class Mahasiswa {
   final String nim;
   final String nama;
   final int jamAlpa;
-  final String tugasNama;
+  final int tugasJamKompen;
   final String tugasDeskripsi;
   final String tugasTenggat;
 
@@ -18,7 +19,7 @@ class Mahasiswa {
     required this.nim,
     required this.nama,
     required this.jamAlpa,
-    required this.tugasNama,
+    required this.tugasJamKompen,
     required this.tugasDeskripsi,
     required this.tugasTenggat,
   });
@@ -28,9 +29,9 @@ class Mahasiswa {
       nim: json['mahasiswa_alpa_nim'] ?? '',
       nama: json['mahasiswa_alpa_nama'] ?? '',
       jamAlpa: json['jam_alpa'] ?? 0,
-      tugasNama: json['progress']?['tugas']?['tugas_nama'] ?? '',
-      tugasDeskripsi: json['progress']?['tugas']?['tugas_deskripsi'] ?? '',
-      tugasTenggat: json['progress']?['tugas']?['tugas_tenggat'] ?? '',
+      tugasJamKompen: json['approval']?['tugas']?['tugas_jam_kompen'] ?? '',
+      tugasDeskripsi: json['approval']?['tugas']?['tugas_deskripsi'] ?? '',
+      tugasTenggat: json['approval']?['tugas']?['tugas_tenggat'] ?? '',
     );
   }
 }
@@ -51,7 +52,7 @@ class _AlphaMahasiswaPageState extends State<AlphaMahasiswaPage> {
 
   Future<List<Mahasiswa>> fetchMahasiswaAlpha() async {
     Dio dio = Dio();
-    final String apiUrl = 'http://192.168.194.83:8000/api/alpa'; // Replace with your API URL
+    final String apiUrl = 'http://192.168.236.83:8000/api/alpa'; // Replace with your API URL
 
     try {
       final response = await dio.post(
@@ -97,7 +98,7 @@ class _AlphaMahasiswaPageState extends State<AlphaMahasiswaPage> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Color.fromARGB(255, 39, 40, 43),
+                      color: Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
                 ),
@@ -131,22 +132,26 @@ class _AlphaMahasiswaPageState extends State<AlphaMahasiswaPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
-
-  AppBar _buildAppBar() {
-    return AppBar(
-      title: const Text(
-        'Suka Kompen.',
-        style: TextStyle(
-          color: Color(0xFF003366), // Dark blue (Biru Dongker)
-          fontWeight: FontWeight.bold,
+AppBar _buildAppBar() {
+  return AppBar(
+     automaticallyImplyLeading: false,
+    title: Text(
+      'Suka Kompen.',
+      style: GoogleFonts.poppins(
+        textStyle: const TextStyle(
+          fontSize: 24.0,
+          fontWeight: FontWeight.w900,
+          color: Color(0xFF191970),
         ),
       ),
-      backgroundColor: Colors.white,
-      elevation: 1,
-      centerTitle: false,
-      iconTheme: const IconThemeData(color: Colors.indigo),
-    );
-  }
+    ),
+    backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+    toolbarHeight: 90.0, // Tambahkan `.0` untuk lebih spesifik
+  );
+}
+  
+
+        
 
   Widget _buildTableHeader() {
     return Container(
@@ -161,7 +166,7 @@ class _AlphaMahasiswaPageState extends State<AlphaMahasiswaPage> {
           Expanded(flex: 2, child: _TableHeaderCell(text: 'NIM')),
           Expanded(flex: 3, child: _TableHeaderCell(text: 'Nama')),
           Expanded(flex: 2, child: _TableHeaderCell(text: 'Jam Alpa')),
-          Expanded(flex: 3, child: _TableHeaderCell(text: 'Tugas Nama')),
+          Expanded(flex: 3, child: _TableHeaderCell(text: 'Jam Kompen')),
         ],
       ),
     );
@@ -183,7 +188,7 @@ class _AlphaMahasiswaPageState extends State<AlphaMahasiswaPage> {
                 Expanded(flex: 2, child: _TableRowCell(text: mahasiswaList[index].nim)),
                 Expanded(flex: 3, child: _TableRowCell(text: mahasiswaList[index].nama)),
                 Expanded(flex: 2, child: _TableRowCell(text: mahasiswaList[index].jamAlpa.toString())),
-                Expanded(flex: 3, child: _TableRowCell(text: mahasiswaList[index].tugasNama)),
+                Expanded(flex: 3, child: _TableRowCell(text: mahasiswaList[index].tugasJamKompen.toString())),
               ],
             ),
           ),

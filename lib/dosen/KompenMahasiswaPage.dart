@@ -6,6 +6,7 @@ import 'task_approval_page.dart';
 import 'notifikasi.dart';
 import 'dashboard.dart';
 import 'ProfilePage.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ApiService {
   final Dio _dio;
@@ -35,7 +36,7 @@ class KompenMahasiswaPage extends StatefulWidget {
 }
 
 class _KompenMahasiswaPageState extends State<KompenMahasiswaPage> {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.194.83:8000/api'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.236.83:8000/api'));
   late ApiService _apiService;
   List<dynamic> _tasks = [];
 
@@ -67,20 +68,22 @@ class _KompenMahasiswaPageState extends State<KompenMahasiswaPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(
           'Suka Kompen.',
-          style: TextStyle(
-            color: Color(0xFF003366), // Dark blue (Biru Dongker)
-            fontWeight: FontWeight.bold,
+          style: GoogleFonts.poppins(
+            textStyle: const TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF191970),
+            ),
           ),
         ),
-        backgroundColor: Colors.white,
-        elevation: 1,
-        centerTitle: false, // Align title to the left
-        iconTheme: IconThemeData(color: Colors.indigo),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+        toolbarHeight: 90,
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,10 +132,10 @@ class _KompenMahasiswaPageState extends State<KompenMahasiswaPage> {
               IconButton(
                 icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => HomePage()),
-                  // );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
                 },
               ),
               IconButton(
@@ -149,19 +152,19 @@ class _KompenMahasiswaPageState extends State<KompenMahasiswaPage> {
               IconButton(
                 icon: const Icon(Icons.mail, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => NotificationScreen()),
-                  // );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => NotifikasiPage()),
+                  );
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => ProfilePage()),
-                  // );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Profilescreen()),
+                  );
                 },
               ),
             ],
@@ -265,7 +268,7 @@ class _TableHeaderCell extends StatelessWidget {
       style: const TextStyle(
         fontWeight: FontWeight.bold,
         fontSize: 12,
-        color: Colors.indigo,
+        color: Color.fromARGB(255, 0, 0, 0),
       ),
       textAlign: TextAlign.center,
     );

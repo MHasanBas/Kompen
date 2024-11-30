@@ -5,7 +5,7 @@ import 'edit_tugas.dart';
 
 final dio = Dio();
 
-String url_domain = "http://192.168.194.83:8000";
+String url_domain = "http://192.168.236.83:8000";
 String url_detail_data = url_domain + "/api/tugas_dosen/detail_data";
 String url_delete_data = url_domain + "/api/tugas_dosen/delete_data";
 
