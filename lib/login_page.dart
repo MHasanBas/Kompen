@@ -18,7 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final Dio dio = Dio();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final String urlLogin = "http://192.168.236.83:8000/api/login";
+  final String urlLogin = "http://192.168.236.129:8000/api/login";
 
   @override
   void dispose() {
@@ -27,7 +27,6 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  // Function to save user credentials including token
   Future<void> saveUserCredentials(String userId, String levelId, String token) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_id', userId); // Save user_id
@@ -115,11 +114,10 @@ class _LoginPageState extends State<LoginPage> {
         final data = response.data;
         final String? levelId = data['user']['level_id']?.toString();
         final String userName = data['user']['nama'] ?? 'Pengguna';
-        final String userId = data['user']['id'].toString(); // Save user_id
-        final String token = data['token']; // Save the token
+        final String userId = data['user']['id'].toString();
+        final String token = data['token'];
 
         if (levelId != null && token.isNotEmpty) {
-          // Save user_id, level_id, and token in SharedPreferences
           await saveUserCredentials(userId, levelId, token);
 
           showLoginResultDialog(context, 'Selamat datang, $userName!', true, levelId);

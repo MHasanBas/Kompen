@@ -12,7 +12,7 @@ import 'package:path_provider/path_provider.dart';
 
 final Dio dio = Dio();
 
-String url_domain = "http://192.168.236.83:8000";
+String url_domain = "http://192.168.236.129:8000";
 String url_detail_data = "$url_domain/api/detail_cek";
 String url_download = "$url_domain/api/download";
 

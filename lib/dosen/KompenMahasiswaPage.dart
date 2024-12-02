@@ -36,7 +36,7 @@ class KompenMahasiswaPage extends StatefulWidget {
 }
 
 class _KompenMahasiswaPageState extends State<KompenMahasiswaPage> {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.236.83:8000/api'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.236.129:8000/api'));
   late ApiService _apiService;
   List<dynamic> _tasks = [];
 

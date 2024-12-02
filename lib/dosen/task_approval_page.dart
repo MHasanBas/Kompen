@@ -9,7 +9,7 @@ import 'dashboard.dart';
 
 final Dio dio = Dio();
 
-String url_domain = "http://192.168.236.83:8000";
+String url_domain = "http://192.168.236.129:8000";
 String url_approval_data = "$url_domain/api/apply_mahasiswa";
 String url_acc_data = "$url_domain/api/acc";
 String url_decline_data = "$url_domain/api/decline";
@@ -101,21 +101,27 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Suka Kompen.',
-              style: GoogleFonts.poppins(
-                textStyle: const TextStyle(
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF191970),
-                ),
-              ),
+        title: Text(
+          'Suka Kompen.',
+          style: GoogleFonts.poppins(
+            textStyle: const TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF191970),
             ),
-            const SizedBox(height: 38),
-            Text(
+          ),
+        ),
+        toolbarHeight: 89.0,
+        automaticallyImplyLeading: false,
+      ),
+      backgroundColor: const Color(0xFFF9F9F9),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Tambahkan teks Approval Page
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
               'Approval Page',
               style: GoogleFonts.poppins(
                 textStyle: const TextStyle(
@@ -125,53 +131,66 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
                 ),
               ),
             ),
-          ],
-        ),
-        toolbarHeight: 89.0,
-        automaticallyImplyLeading: false,
-      ),
-      backgroundColor: const Color(0xFFF9F9F9),
-      body: ListView.builder(
-        itemCount: tasks.length,
-        itemBuilder: (context, index) {
-          final task = tasks[index];
-          final tugas = task['tugas'];
-          final apply = task['apply'][0];
+          ),
+          // Konten utama, seperti daftar tugas atau pesan kosong
+          Expanded(
+            child: tasks.isEmpty
+                ? Center(
+                    child: Text(
+                      'Belum ada yang apply',
+                      style: GoogleFonts.poppins(
+                        textStyle: const TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: tasks.length,
+                    itemBuilder: (context, index) {
+                      final task = tasks[index];
+                      final tugas = task['tugas'];
+                      final apply = task['apply'][0];
 
-          return Card(
-            margin: const EdgeInsets.all(10),
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(10),
-              leading: const Icon(Icons.assignment, size: 50),
-              title: Text(
-                tugas != null && tugas['tugas_nama'] != null
-                    ? tugas['tugas_nama']
-                    : 'Nama Tugas Tidak Ditemukan',
-              ),
-              subtitle: Text(
-                '${tugas != null && tugas['nama'] != null ? tugas['nama'] : 'Unknown user'} - '
-                'Status: ${apply != null && apply['apply_status'] != null ? apply['apply_status'] : 'Pending'}',
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.red),
-                    onPressed: () {
-                      updateStatus(apply['apply_id'], false); // Decline task
+                      return Card(
+                        margin: const EdgeInsets.all(10),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(10),
+                          leading: const Icon(Icons.assignment, size: 50),
+                          title: Text(
+                            tugas != null && tugas['tugas_nama'] != null
+                                ? tugas['tugas_nama']
+                                : 'Nama Tugas Tidak Ditemukan',
+                          ),
+                          subtitle: Text(
+                            '${tugas != null && tugas['nama'] != null ? tugas['nama'] : 'Unknown user'} - '
+                            'Status: ${apply != null && apply['apply_status'] != null ? apply['apply_status'] : 'Pending'}',
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.close, color: Colors.red),
+                                onPressed: () {
+                                  updateStatus(apply['apply_id'], false); // Decline task
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.check, color: Colors.green),
+                                onPressed: () {
+                                  updateStatus(apply['apply_id'], true); // Approve task
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
                     },
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.check, color: Colors.green),
-                    onPressed: () {
-                      updateStatus(apply['apply_id'], true); // Approve task
-                    },
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+          ),
+        ],
       ),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
@@ -207,7 +226,8 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const NotifikasiPage()),
+                    MaterialPageRoute(
+                        builder: (context) => const NotifikasiPage()),
                   );
                 },
               ),
@@ -216,7 +236,8 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const Profilescreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const Profilescreen()),
                   );
                 },
               ),

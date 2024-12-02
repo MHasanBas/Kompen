@@ -34,7 +34,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
       Dio dio = Dio();
       dio.options.headers['Authorization'] = 'Bearer $authToken';
       final response = await dio.post(
-        'http://192.168.236.83:8000/api/cek_tugas',
+        'http://192.168.236.129:8000/api/cek_tugas',
       );
       if (response.statusCode == 200) {
         setState(() {
@@ -96,7 +96,21 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
               ),
             ),
             isLoading
-                ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
+            : tugasList.isEmpty
+                ? Expanded(
+                    child: Center(
+                      child: Text(
+                        'Belum ada yang mengumpulkan tugas',
+                        style: GoogleFonts.poppins(
+                          textStyle: const TextStyle(
+                            fontSize: 16.0,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
                 : Expanded(
                     child: ListView.builder(
                       itemCount: tugasList.length,
@@ -128,8 +142,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           tugasItem['tugas']['tugas_nama'] ??
@@ -156,8 +169,8 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                                   ),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.orange, // Warna tombol
-                                      foregroundColor: Colors.white, // Warna teks
+                                      backgroundColor: Colors.orange,
+                                      foregroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                       ),
@@ -167,12 +180,11 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                                       ),
                                     ),
                                     onPressed: () {
-                                      var approvalId = tugasItem['approval'][0]
-                                          ['approval_id'];
-                                      var progressId = tugasItem['approval'][0]
-                                          ['progress_id'];
-                                      var tugasId = tugasItem['tugas']
-                                          ['tugas_id'];
+                                      var approvalId =
+                                          tugasItem['approval'][0]['approval_id'];
+                                      var progressId =
+                                          tugasItem['approval'][0]['progress_id'];
+                                      var tugasId = tugasItem['tugas']['tugas_id'];
 
                                       print(
                                           'Fetching data for tugasId: $tugasId and approvalId: $approvalId and progressId: $progressId');
@@ -206,6 +218,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                       },
                     ),
                   ),
+
           ],
         ),
       ),

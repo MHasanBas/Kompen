@@ -18,7 +18,7 @@ class LihatTugasPage extends StatefulWidget {
 class _LihatTugasPageState extends State<LihatTugasPage> {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: "http://192.168.236.83:8000/api", // Ganti dengan URL backend Laravel Anda
+      baseUrl: "http://192.168.236.129:8000/api", // Ganti dengan URL backend Laravel Anda
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
@@ -28,93 +28,57 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
 
   List<dynamic> _tugasList = [];
   bool _isLoading = true;
-  late String _userId;
+
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
 
   @override
   void initState() {
     super.initState();
-    _getUserId();
+    _getUserIdAndToken();
   }
 
-  // Ambil user_id dari SharedPreferences
-  Future<void> _getUserId() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _userId = prefs.getString('user_id') ?? ''; // Ambil user_id yang disimpan
-    });
-    if (_userId.isNotEmpty) {
+  Future<void> _getUserIdAndToken() async {
+    String? authToken = await getAuthToken();
+    if (authToken == null) {
+      throw Exception('Token tidak ditemukan');
+    }
+
+    if (authToken.isNotEmpty) {
+      _dio.options.headers['Authorization'] = 'Bearer $authToken';
       _fetchData();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("User ID not found")),
+        const SnackBar(content: Text("User Token not found")),
       );
     }
   }
 
-  // Fungsi untuk mengambil data tugas
   Future<void> _fetchData() async {
     setState(() {
       _isLoading = true;
     });
     try {
-      final response = await _dio.post("/tugas", data: {"user_id": _userId});
-      setState(() {
-        _tugasList = response.data;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error fetching tasks: $e")),
-      );
-    }
-  }
-
-  // Fungsi untuk menambah tugas
-  Future<void> _addTugas() async {
-    try {
-      // Misalnya Anda menambah tugas baru dengan data tertentu
-      final response = await _dio.post("/tugas", data: {
-        "user_id": _userId,
-        "tugas_nama": "Tugas Baru",
-        "tugas_deskripsi": "Deskripsi Tugas Baru",
-        // Data lainnya sesuai kebutuhan
-      });
-
-      if (response.statusCode == 200) {
-        // Refresh data setelah berhasil menambah tugas
-        _fetchData();
+      final response = await _dio.post("/tugas_dosen");
+      if (response.statusCode == 200 && response.data['status'] == 'success') {
+        setState(() {
+          _tugasList = response.data['data'];
+        });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to add task")),
-        );
+        setState(() {
+          _tugasList = []; // Jika gagal, tetap kosong
+        });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error adding task: $e")),
-      );
-    }
-  }
-
-  // Fungsi untuk menghapus tugas
-  Future<void> _deleteTugas(String tugasId) async {
-    try {
-      final response = await _dio.delete("/tugas/$tugasId");
-
-      if (response.statusCode == 200) {
-        // Refresh data setelah berhasil menghapus tugas
-        _fetchData();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to delete task")),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error deleting task: $e")),
-      );
+      setState(() {
+        _tugasList = []; // Tangani error dengan mengosongkan daftar
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -151,7 +115,17 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _tugasList.isEmpty
-                      ? const Center(child: Text("No tasks available"))
+                      ? const Center(
+                          child: Text(
+                            "Belum ada tugas yang di-upload",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black54,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        )
                       : ListView.builder(
                           itemCount: _tugasList.length,
                           itemBuilder: (context, index) {
@@ -181,8 +155,7 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
                                         width: 70,
                                         height: 70,
                                         decoration: BoxDecoration(
-                                          color: Colors.blueAccent
-                                              .withOpacity(0.2),
+                                          color: Colors.blueAccent.withOpacity(0.2),
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(
@@ -194,8 +167,7 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               tugas['tugas_nama'] ?? 'Tugas',
@@ -215,34 +187,34 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
                                             ),
                                             const SizedBox(height: 8),
                                             Text(
-                                              tugas['tugas_deskripsi'] ??
-                                                  'Deskripsi tidak tersedia',
+                                              tugas['tugas_deskripsi'] ?? 'Deskripsi tidak tersedia',
                                               style: const TextStyle(
                                                 fontSize: 14,
                                                 color: Colors.black87,
                                               ),
                                             ),
                                             const SizedBox(height: 8),
-                                           // In the ListView.builder, update the task display section
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                tugas['tugas_tipe'] == 'online' ? 'Online' : 'Offline', 
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: tugas['tugas_tipe'] == 'online' ? Colors.green : Colors.red,
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  tugas['tugas_tipe'] == 'online' ? 'Online' : 'Offline',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: tugas['tugas_tipe'] == 'online'
+                                                        ? Colors.green
+                                                        : Colors.red,
+                                                  ),
                                                 ),
-                                              ),
-                                              Text(
-                                                '-${tugas['tugas_jam_kompen'] ?? '0'} Jam',
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.red,
+                                                Text(
+                                                  '-${tugas['tugas_jam_kompen'] ?? '0'} Jam',
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.red,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
+                                              ],
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -257,7 +229,7 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
           ],
         ),
       ),
-       bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 5,
         color: Colors.indigo[900],
@@ -269,19 +241,12 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
               IconButton(
                 icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                 Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                             HomeScreen()), // Open NotifikasiPage
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.access_time,
-                    color: Colors.white, size: 30),
+                icon: const Icon(Icons.access_time, color: Colors.white, size: 30),
                 onPressed: () {
-
                   Navigator.push(context, MaterialPageRoute(builder: (context) => TaskApprovalPage()));
                 },
               ),
@@ -289,50 +254,24 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
               IconButton(
                 icon: const Icon(Icons.mail, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            const NotifikasiPage()), // Open NotifikasiPage
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const NotifikasiPage()));
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const Profilescreen()),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const Profilescreen()));
                 },
               ),
             ],
           ),
         ),
       ),
-      floatingActionButton: Container(
-        width: 90,
-        height: 90,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.blueAccent,
-        ),
-        child: FloatingActionButton(
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AddTaskPage()),
-            );
-          },
-          child: const Icon(
-            Icons.add,
-            size: 50,
-            color: Colors.white,
-          ),
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => AddTaskPage()));
+        },
+        child: const Icon(Icons.add, size: 40),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );

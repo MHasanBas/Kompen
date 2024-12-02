@@ -30,7 +30,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   List<dynamic> _jenisTugasOptions = [];
   List<dynamic> _bidangKompetensiOptions = [];
 
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.236.83:8000/api'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://192.168.236.129:8000/api'));
 
   @override
   void initState() {
