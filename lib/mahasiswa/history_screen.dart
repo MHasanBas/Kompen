@@ -1,85 +1,103 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:kompen/mahasiswa/cetak/cetaksurat.dart';
-import 'package:kompen/mahasiswa/models/task.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'cetak/cetaksurat.dart';
 import 'notification_screen.dart';
 import 'tasks_screen.dart';
 import 'home_page.dart';
 import 'ProfilePage.dart';
+import 'package:intl/intl.dart';
 
-class HistoryScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: SukaKompen(),
-      routes: {
-        '/cetak': (context) => CetakScreen(),
+class ApiService {
+  final Dio _dio = Dio(
+    BaseOptions(
+      baseUrl: 'http://192.168.236.129:8000', // Ganti dengan IP server Anda
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
-    );
+    ),
+  );
+
+  Future<List> FetchHistory(String token) async {
+    try {
+      final response = await _dio.post(
+        '/api/notif_terima_tugas',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      return response.data['accept'] ?? [];
+    } catch (error) {
+      throw Exception('Gagal memuat notifikasi tugas diterima: $error');
+    }
   }
 }
 
-class SukaKompen extends StatelessWidget {
-  final List<Task> tasks = [
-    Task(
-      title: 'Membuat PPT',
-      description: 'Tugas Berhasil dikerjakan!',
-      tugas:
-          'Membuat Presentasi (PPT) untuk mata kuliah ...., dengan materi ....',
-      status: true,
-      date: '02-09-2024',
-      time: 10,
-      type: 'Dosen',
-      nama: 'Septian Enggar S. S.Pd., M.T.',
-      jenis: 'online',
-    ),
-    Task(
-      title: 'Arsip Absensi',
-      description: 'Tugas Berhasil dikerjakan!',
-      tugas:
-          'Mengarsip kertas absensi dalam satu semester semua kelas dan prodi di satu jurusan di ruang admin secara lantai 6 gedung sipil offline',
-      status: true,
-      date: '21-08-2024',
-      time: 5,
-      type: 'Admin',
-      nama: 'Titis Octary S.',
-      jenis: 'Offline',
-    ),
-    Task(
-      title: 'Update Database',
-      description: 'Tugas Gagal dikerjakan!',
-      tugas: 'Update database mahasiswa/dosen/dll di ruang admin',
-      status: false,
-      date: '19-01-2024',
-      time: 0,
-      type: 'Dosen',
-      nama: 'Septian Enggar S. S.Pd., M.T.',
-      jenis: 'Offline',
-    ),
-    Task(
-      title: 'Input Nilai',
-      description: 'Tugas Gagal dikerjakan!',
-      tugas: 'Menginput nilai dari kertas ke dalam excel sebanyak 5 kelas',
-      status: false,
-      date: '21-08-2023',
-      time: 0,
-      type: 'Dosen',
-      nama: 'Septian Enggar S. S.Pd., M.T.',
-      jenis: 'Online',
-    ),
-    Task(
-      title: 'Membeli Sandal JTI',
-      description: 'Tugas Gagal dikerjakan!',
-      tugas:
-          'Membeli sandal untuk fasilitas umum mushola di jurusan teknologi informasi gedung sipil lantai 6',
-      status: false,
-      date: '02-03-2023',
-      time: 0,
-      type: 'Membeli Sandal JTI',
-      nama: 'Lailatul Qodriyah',
-      jenis: 'Offline',
-    ),
-  ];
+class HistoryScreen extends StatefulWidget {
+  @override
+  _HistoryScreenState createState() => _HistoryScreenState();
+}
+
+class _HistoryScreenState extends State<HistoryScreen> {
+  final ApiService apiService = ApiService();
+  List _history = [];
+  bool _isLoading = true;
+  String? _token;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTasks();
+  }
+
+  Future<void> fetchTasks() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      _token = prefs.getString('auth_token');
+      await _fetchHistory();
+    } catch (error) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _fetchHistory() async {
+    try {
+      final history = await apiService.FetchHistory(_token!);
+      setState(() {
+        _history = history;
+        _isLoading = false;
+      });
+    } catch (error) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  String _getTugasNama(Map<String, dynamic> tugas) {
+    return tugas['tugas_nama'] ?? "Tugas tidak tersedia";
+  }
+
+  String _getPemberiTugas(Map<String, dynamic>? pemberiTugas) {
+    if (pemberiTugas == null) {
+      return "Pemberi tugas tidak tersedia";
+    }
+    return pemberiTugas['dosen_nama'] ??
+        pemberiTugas['admin_nama'] ??
+        pemberiTugas['tendik_nama'] ??
+        "Pemberi tugas tidak tersedia";
+  }
+
+  String _formatDate(String dateTime) {
+    try {
+      DateTime parsedDate = DateTime.parse(dateTime);
+      return DateFormat('yyyy-MM-dd').format(parsedDate);
+    } catch (e) {
+      return 'Tanggal tidak valid';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,201 +106,159 @@ class SukaKompen extends StatelessWidget {
         title: Text(
           'Suka Kompen.',
           style: GoogleFonts.poppins(
-            textStyle: TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.w900,
-              color: const Color(0xFF191970),
-            ),
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF191970),
           ),
         ),
         backgroundColor: Colors.white,
-        leadingWidth: 482.0,
-        toolbarHeight: 89.0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ListView.builder(
-          itemCount: tasks.length,
-          itemBuilder: (context, index) {
-            final task = tasks[index];
-            return Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-              child: Card(
-                color: Colors.white,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/cetak',
-                      arguments: task,
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(13.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: ListTile(
-                            title: Text(
-                              task.title,
-                              style: GoogleFonts.exo(
-                                textStyle: TextStyle(
-                                  fontSize: 20.0,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListView.builder(
+                itemCount: _history.length,
+                itemBuilder: (context, index) {
+                  final history = _history[index];
+                  String tugasNama = _getTugasNama(history['tugas']);
+                  String pemberiTugas =
+                      _getPemberiTugas(history['tugas']['pemberi_tugas']);
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 3.0, horizontal: 5.0),
+                    child: Card(
+                      color: Colors.white,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CetakScreen(),
                             ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${task.type} | ${task.nama}',
-                                  style: GoogleFonts.exo(
-                                    textStyle: TextStyle(
-                                      fontSize: 10.0,
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: ListTile(
+                                  title: Text(
+                                    tugasNama,
+                                    style: GoogleFonts.exo(
+                                      fontSize: 16.0,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                ),
-                                Text(
-                                  task.description,
-                                  style: GoogleFonts.roboto(
-                                    textStyle: TextStyle(
-                                      fontSize: 12.0,
-                                      fontWeight: FontWeight.w300,
-                                    ),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '$pemberiTugas',
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 10.0,
+                                          fontWeight: FontWeight.w300,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${history['tugas']['tugas_deskripsi']}',
+                                        style: GoogleFonts.roboto(
+                                          fontSize: 10.0,
+                                          fontWeight: FontWeight.w300,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                Text(
-                                  'Alpa Berkurang ${task.time} jam',
-                                  style: GoogleFonts.roboto(
-                                    textStyle: TextStyle(
-                                      fontSize: 12.0,
-                                      fontWeight: FontWeight.w300,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Column(
-                          children: [
-                            Icon(
-                              task.status ? Icons.check_circle : Icons.cancel,
-                              color: task.status ? Colors.green : Colors.red,
-                              size: 30,
-                            ),
-                            SizedBox(height: 35.0),
-                            Text(
-                              '${task.jenis} | ${task.date}',
-                              style: GoogleFonts.roboto(
-                                textStyle: TextStyle(
-                                  fontSize: 10.0,
-                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
-                            ),
-                          ],
+                              Column(
+                                children: [
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: Colors.green,
+                                    size: 20,
+                                  ),
+                                  SizedBox(height: 5.0),
+                                  Text(
+                                    '${history['tugas']['tugas_tipe']} | ${_formatDate(history['tugas']['tugas_tenggat'])}',
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 8.0,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
-            );
-          },
-        ),
-      ),
+            ),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 5,
-        color: Colors.indigo[900], // Dark blue bottom bar
+        color: Colors.indigo[900],
         child: SizedBox(
-          height: 70,
+          height: 50,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               IconButton(
-                icon: const Icon(Icons.home, color: Colors.white, size: 30),
+                icon: const Icon(Icons.home, color: Colors.white, size: 20),
                 onPressed: () {
-                  // Navigate to home
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            HomePage()), // Ganti 'HomePage()' sesuai dengan class dari home_page.dart
+                    MaterialPageRoute(builder: (context) => HomePage()),
                   );
                 },
               ),
               IconButton(
-                icon: Icon(Icons.access_time,
-                    color: Colors.white,
-                    size: 30), // Warna icon putih dan ukuran lebih besar
+                icon: Icon(Icons.access_time, color: Colors.white, size: 20),
                 onPressed: () {
-                  // Arahkan ke halaman Histori
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            HistoryScreen()), // Sesuaikan dengan nama kelas yang benar
+                    MaterialPageRoute(builder: (context) => HistoryScreen()),
                   );
                 },
               ),
-              SizedBox(width: 50), // Beri ruang lebih untuk tombol +
+              SizedBox(width: 40),
               IconButton(
-                icon: Icon(Icons.mail,
-                    color: Colors.white,
-                    size: 30), // Warna icon putih dan ukuran lebih besar
+                icon: Icon(Icons.mail, color: Colors.white, size: 20),
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) =>
-                            NotificationScreen()), // Sesuaikan dengan nama kelas 'NotificationScreen'
+                        builder: (context) => NotificationScreen()),
                   );
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.person, color: Colors.white, size: 30),
+                icon: const Icon(Icons.person, color: Colors.white, size: 20),
                 onPressed: () {
-                   Navigator.push(
+                  Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            ProfilePage()), // Sesuaikan dengan nama kelas 'NotificationScreen'
+                    MaterialPageRoute(builder: (context) => ProfilePage()),
                   );
-                  // Navigate to profile page
                 },
               ),
             ],
           ),
         ),
       ),
-      floatingActionButton: Container(
-        width: 90, // Ukuran lingkaran FAB lebih besar
-        height: 90, // Tinggi lingkaran FAB lebih besar
-        decoration: BoxDecoration(
-          shape: BoxShape.circle, // Bentuk lingkaran penuh
-          color: Colors.blueAccent, // Warna biru lebih cerah
-        ),
-        child: FloatingActionButton(
-          elevation: 0, // Hapus elevation agar rata dengan lingkaran
-          backgroundColor: Colors
-              .transparent, // Jadikan background transparan agar tidak bertumpuk
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => TasksScreen()),
-            );
-          },
-          child: Icon(
-            Icons.add,
-            size: 50, // Ukuran icon + lebih besar dari icon biasa
-            color: Colors.white, // Warna putih agar kontras
-          ),
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => TasksScreen()),
+          );
+        },
+        child: Icon(Icons.add, size: 30, color: Colors.white),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
