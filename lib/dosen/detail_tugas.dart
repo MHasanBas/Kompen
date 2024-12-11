@@ -5,7 +5,7 @@ import 'edit_tugas.dart';
 
 final dio = Dio();
 
-String url_domain = "http://192.168.236.129:8000";
+String url_domain = "https://sukakompen.kufoto.my.id";
 String url_detail_data = url_domain + "/api/tugas_dosen/detail_data";
 String url_delete_data = url_domain + "/api/tugas_dosen/delete_data";
 
@@ -95,10 +95,10 @@ class _DetailTugasPage extends State<DetailTugasPage> {
         backgroundColor: Colors.white,
         toolbarHeight: 80.0,
         elevation: 1,
-        iconTheme: IconThemeData(color: const Color(0xFF191970)),
+        iconTheme: const IconThemeData(color: Color(0xFF191970)),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -112,10 +112,10 @@ class _DetailTugasPage extends State<DetailTugasPage> {
                       color: Colors.blueGrey[900],
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Center(
                     child: Container(
-                      padding: EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
                         borderRadius: BorderRadius.circular(16),
@@ -131,7 +131,7 @@ class _DetailTugasPage extends State<DetailTugasPage> {
                               color: Colors.blueGrey[900],
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
                             tugas?['tugas_tipe'] ?? 'Status tidak tersedia',
                             style: GoogleFonts.poppins(
@@ -139,80 +139,87 @@ class _DetailTugasPage extends State<DetailTugasPage> {
                               color: Colors.green,
                             ),
                           ),
-                          SizedBox(height: 16),
-                          Icon(
-                            Icons.assignment,
-                            size: 100,
-                            color: Colors.blueGrey[700],
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            tugas?['tugas_deskripsi'] ??
-                                'Deskripsi tidak tersedia',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.blueGrey[700],
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          SizedBox(height: 24),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          const SizedBox(height: 16),
+                          Column(
                             children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  if (tugas != null &&
-                                      tugas!['tugas_id'] != null) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => EditTugasPage(),
-                                      ),
-                                    );
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content:
-                                              Text('ID tugas tidak ditemukan')),
-                                    );
-                                  }
-                                },
-                                child: Text(
-                                  'Edit Tugas',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xFF6200EE),
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 24, vertical: 12),
-                                ),
+                              Image.asset(
+                                'assets/description.png', // Path gambar di project Anda
+                                height: 250,
                               ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  if (tugas != null &&
-                                      tugas!['tugas_id'] != null) {
-                                      deleteData(widget.tugasId);
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content:
-                                              Text('ID tugas tidak ditemukan')),
-                                    );
-                                  }
-                                },
-                                child: Text(
-                                  'Hapus Tugas',
-                                  style: GoogleFonts.poppins(
-                                      fontSize: 14, color: Colors.white),
+                              const SizedBox(height: 16),
+                              Text(
+                                tugas?['tugas_deskripsi'] ??
+                                    'Deskripsi tidak tersedia',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  color: Colors.blueGrey[700],
                                 ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey,
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 24, vertical: 12),
-                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 24),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      if (tugas != null &&
+                                          tugas!['tugas_id'] != null) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                EditTugasPage(),
+                                          ),
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'ID tugas tidak ditemukan')),
+                                        );
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF6200EE),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 24, vertical: 12),
+                                    ),
+                                    child: Text(
+                                      'Edit Tugas',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      if (tugas != null &&
+                                          tugas!['tugas_id'] != null) {
+                                        deleteData(widget.tugasId);
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'ID tugas tidak ditemukan')),
+                                        );
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.grey,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 24, vertical: 12),
+                                    ),
+                                    child: Text(
+                                      'Hapus Tugas',
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 14, color: Colors.white),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:http/http.dart' as http;
+import 'package:webview_flutter/webview_flutter.dart';
 
 class QRCodePage extends StatefulWidget {
   @override
@@ -51,11 +53,10 @@ class _QRCodePageState extends State<QRCodePage> {
                   ElevatedButton(
                     onPressed: () {
                       if (qrText != null) {
-                        // Panggil fungsi untuk mencetak dokumen atau menampilkan dokumen
-                        _printDocument(qrText!);
+                        _handleQRCode(qrText!);
                       }
                     },
-                    child: Text('Print Document'),
+                    child: Text('Open Link'),
                   ),
                 ],
               ),
@@ -70,20 +71,40 @@ class _QRCodePageState extends State<QRCodePage> {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
       setState(() {
-        qrText = scanData.code; // Simpan data yang dipindai
+        qrText = scanData.code; // Save scanned data
       });
     });
   }
 
-  void _printDocument(String data) {
-    // Logika untuk mencetak dokumen atau menampilkan dokumen berdasarkan data QR code
-    // Contoh: menampilkan data dalam dialog
+  void _handleQRCode(String data) async {
+    try {
+      final Uri uri = Uri.tryParse(data) ?? Uri();
+      if (uri.isAbsolute) {
+        // Check if the URL is reachable
+        final response = await http.head(uri);
+        if (response.statusCode == 200) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => WebViewPage(url: data)),
+          );
+        } else {
+          _showErrorDialog('URL is not reachable.');
+        }
+      } else {
+        _showErrorDialog('Scanned data is not a valid URL.');
+      }
+    } catch (e) {
+      _showErrorDialog('An error occurred while trying to open the URL.');
+    }
+  }
+
+  void _showErrorDialog(String message) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Dokumen'),
-          content: Text(data),
+          title: Text('Error'),
+          content: Text(message),
           actions: [
             TextButton(
               child: Text('OK'),
@@ -101,5 +122,24 @@ class _QRCodePageState extends State<QRCodePage> {
   void dispose() {
     controller?.dispose();
     super.dispose();
+  }
+}
+
+class WebViewPage extends StatelessWidget {
+  final String url;
+
+  WebViewPage({required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('WebView'),
+      ),
+      body: WebView(
+        initialUrl: url,
+        javascriptMode: JavascriptMode.unrestricted,
+      ),
+    );
   }
 }

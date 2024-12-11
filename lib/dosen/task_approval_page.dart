@@ -9,7 +9,7 @@ import 'dashboard.dart';
 
 final Dio dio = Dio();
 
-String url_domain = "http://192.168.236.129:8000";
+String url_domain = "https://sukakompen.kufoto.my.id";
 String url_approval_data = "$url_domain/api/apply_mahasiswa";
 String url_acc_data = "$url_domain/api/acc";
 String url_decline_data = "$url_domain/api/decline";

@@ -13,7 +13,7 @@ final TextEditingController namaController = TextEditingController();
 final TextEditingController passwordController = TextEditingController();
 final TextEditingController confirmPasswordController = TextEditingController();
 
-String url_domain = "http://192.168.236.83:8000";
+String url_domain = "https://sukakompen.kufoto.my.id";
 String url_create_data = url_domain + "/api/create_data";
 String url_get_levels = url_domain + "/api/levels";
 
@@ -53,7 +53,8 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  Future<void> register(int levelId, String username, String nama, String password, String confirmPassword, BuildContext context) async {
+  Future<void> register(int levelId, String username, String nama,
+      String password, String confirmPassword, BuildContext context) async {
     try {
       var response = await dio.post(
         url_create_data,
@@ -93,233 +94,187 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
+
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 0, 30, 130),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(60),
-                  bottomRight: Radius.circular(60),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/images/men.png"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              const SizedBox(height: 60),
+              Text(
+                "Suka Kompen",
+                style: GoogleFonts.poppins(
+                  textStyle: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromARGB(255, 0, 30, 130),
+                  ),
                 ),
               ),
-              child: Center(
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      DropdownButtonFormField<int>(
+                        value: selectedLevelId,
+                        items: levels.isEmpty
+                            ? []
+                            : levels.map<DropdownMenuItem<int>>((level) {
+                                return DropdownMenuItem<int>(
+                                  value: level['level_id'],
+                                  child: Text(level['level_nama']),
+                                );
+                              }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedLevelId = value!;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Pilih Level",
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 10),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                              width: 2.0,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                              width: 2.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      TextField(
+                        controller: usernameController,
+                        decoration: InputDecoration(
+                          hintText: "Username",
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      TextField(
+                        controller: namaController,
+                        decoration: InputDecoration(
+                          hintText: "Nama",
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      TextField(
+                        controller: passwordController,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          hintText: "Password",
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      TextField(
+                        controller: confirmPasswordController,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          hintText: "Confirm Password",
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Spacer(),
+              ElevatedButton(
+                onPressed: () {
+                  if (selectedLevelId == null) {
+                    print("Level harus dipilih");
+                  } else if (usernameController.text.isEmpty ||
+                      namaController.text.isEmpty ||
+                      passwordController.text.isEmpty ||
+                      confirmPasswordController.text.isEmpty) {
+                    print("Semua field harus diisi");
+                  } else if (passwordController.text !=
+                      confirmPasswordController.text) {
+                    print("Password dan konfirmasi password tidak cocok");
+                  } else {
+                    register(
+                      selectedLevelId!,
+                      usernameController.text,
+                      namaController.text,
+                      passwordController.text,
+                      confirmPasswordController.text,
+                      context,
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromARGB(255, 0, 30, 130),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 50,
+                    vertical: 15,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text("Register",
+                    style: TextStyle(fontSize: 16, color: Colors.white)),
+              ),
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoginPage(),
+                    ),
+                  );
+                },
                 child: Text(
-                  "Register",
-                  style: GoogleFonts.poppins(
-                    textStyle: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                "Sudah Punya Akun? Login",
+                style: GoogleFonts.poppins(
+                  textStyle: TextStyle(
+                    fontSize: 16,
+                    color: Colors.blue[900],
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 20),
-                  DropdownButtonFormField<int>(
-                    value: selectedLevelId,
-                    items: levels.isEmpty
-                        ? []
-                        : levels.map<DropdownMenuItem<int>>((level) {
-                            return DropdownMenuItem<int>(
-                              value: level['level_id'],
-                              child: Text(level['level_nama']),
-                            );
-                          }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedLevelId = value!;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 10),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide(
-                          color: Colors.blue[900]!,
-                          width: 2.0,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide(
-                          color: Colors.blue[900]!,
-                          width: 2.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(
-                        color: Colors.blue[900]!,
-                        width: 2.0,
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: TextField(
-                      controller: usernameController,
-                      decoration: const InputDecoration(
-                        hintText: "Username",
-                        border: InputBorder.none,
-                      ),
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(
-                        color: Colors.blue[900]!,
-                        width: 2.0,
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: TextField(
-                      controller: namaController,
-                      decoration: const InputDecoration(
-                        hintText: "Nama",
-                        border: InputBorder.none,
-                      ),
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(
-                        color: Colors.blue[900]!,
-                        width: 2.0,
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: TextField(
-                      controller: passwordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        hintText: "Password",
-                        border: InputBorder.none,
-                      ),
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.0),
-                      border: Border.all(
-                        color: Colors.blue[900]!,
-                        width: 2.0,
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: TextField(
-                      controller: confirmPasswordController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        hintText: "Confirm Password",
-                        border: InputBorder.none,
-                      ),
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ),
-                  const SizedBox(height: 25),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (selectedLevelId == null) {
-                        print("Level harus dipilih");
-                      } else if (usernameController.text.isEmpty ||
-                          namaController.text.isEmpty ||
-                          passwordController.text.isEmpty ||
-                          confirmPasswordController.text.isEmpty) {
-                        print("Semua field harus diisi");
-                      } else if (passwordController.text !=
-                          confirmPasswordController.text) {
-                        print("Password dan konfirmasi password tidak cocok");
-                      } else {
-                        register(
-                          selectedLevelId!,
-                          usernameController.text,
-                          namaController.text,
-                          passwordController.text,
-                          confirmPasswordController.text,
-                          context,
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[900],
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 50, vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      "Register",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => LoginPage(),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      "Sudah punya akun? Login",
-                      style: GoogleFonts.poppins(
-                        textStyle: TextStyle(
-                          fontSize: 16,
-                          color: Colors.blue[900],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
-}
-
-void create_data(int levelId, String username, String nama, String password) async {
-  Response response;
-  response = await dio.post(
-    url_create_data,
-    queryParameters: {
-      'level_id': levelId,
-      'username': username,
-      'nama': nama,
-      'password': password
-    },
-  );
-
-  usernameController.text = "";
-  namaController.text = "";
-  passwordController.text = "";
 }

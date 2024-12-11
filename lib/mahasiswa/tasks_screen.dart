@@ -5,7 +5,7 @@ import 'task_detail_screen.dart';
 final Dio dio = Dio(); // Inisialisasi Dio untuk HTTP request
 
 // URL API
-final String baseUrl = "http://192.168.236.129:8000/api/tugas";
+final String baseUrl = "https://sukakompen.kufoto.my.id/api/tugas";
 
 class TasksScreen extends StatefulWidget {
   @override
@@ -104,10 +104,11 @@ class _TasksScreenState extends State<TasksScreen> {
                           ),
                         ],
                       ),
-                      leading: Icon(
-                        Icons.task,
-                        size: 40,
-                        color: Colors.blueAccent,
+                      leading: Image.asset(
+                        'assets/task.jpg', // Ganti dengan path gambar Anda
+                        width: 40,
+                        height: 120,
+                        fit: BoxFit.cover,
                       ),
                       onTap: () {
                         Navigator.push(

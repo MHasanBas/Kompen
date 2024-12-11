@@ -39,6 +39,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  
   dio: ^5.3.2
   http: ^1.2.2
   google_fonts: ^6.2.1
@@ -51,10 +52,15 @@ dependencies:
   flutter_launcher_icons: "^0.14.1"
   open_file: ^3.2.1
   path_provider: ^2.0.13
-  flutter_pdfview: ^1.0.0
   pdf: ^3.8.1
   printing: ^5.9.1
   rflutter_alert: ^2.0.4
+  webview_flutter: ^3.0.4
+  flutter_pdfview: ^1.2.9
+  image_picker: ^0.8.7+3 
+
+
+
 
 
 
@@ -88,6 +94,12 @@ flutter_launcher_icons:
 
 # The following section is specific to Flutter packages.
 flutter:
+
+  assets:
+    - assets/task.jpg
+    - assets/images/men.png
+    - assets/description.png
+  
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

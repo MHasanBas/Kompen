@@ -8,11 +8,12 @@ import 'print_letter_screen.dart';
 import 'tasks_screen.dart';
 import 'history_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ApiService {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'http://192.168.236.129:8000', // Ganti dengan IP server Anda
+      baseUrl: 'https://sukakompen.kufoto.my.id', // Ganti dengan IP server Anda
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -130,42 +131,36 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                "Suka Kompen.",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.indigo[900],
-                  fontSize: 24,
-                ),
-              ),
+         automaticallyImplyLeading: false,
+        title: Text(
+          'Suka Kompen.',
+          style: GoogleFonts.poppins(
+            textStyle: const TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF191970), // Warna biru tua
             ),
-            IconButton(
-              icon: Icon(Icons.filter_list, color: Colors.grey),
-              onPressed: () {
-                // Tambahkan aksi filter di sini
-              },
-            ),
-          ],
+          ),
         ),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+        toolbarHeight: 90, // Tinggi AppBar
+        elevation: 0, // Menghapus bayangan
       ),
       body: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         color: Colors.grey[100],
         child: _isLoading
-            ? Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     "Notifikasi",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                    style: GoogleFonts.poppins(
+                      textStyle: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   SizedBox(height: 16),

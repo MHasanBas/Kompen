@@ -9,7 +9,7 @@ import 'home_page.dart';
 
 final Dio dio = Dio();
 
-String url_domain = "http://192.168.236.129:8000";
+String url_domain = "https://sukakompen.kufoto.my.id";
 String url_detail_data = url_domain + "/api/tugas/show";
 String url_apply_data = url_domain + "/api/apply";
 
@@ -307,11 +307,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          const Icon(
-                            Icons.task,
-                            size: 80,
-                            color: Colors.blueAccent,
-                          ),
+                  Image.asset(
+                    'assets/description.png', // Path gambar di project Anda
+                    height: 200,
+                  ),
                           const SizedBox(height: 16),
                           Text(
                             taskDetail["tugas_nama"] ?? "Judul tidak tersedia",
@@ -493,3 +492,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     );
   }
 }
+
+
+  

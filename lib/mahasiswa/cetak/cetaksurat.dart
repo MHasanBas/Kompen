@@ -11,7 +11,7 @@ class CetakScreen extends StatefulWidget {
 class _CetakScreenState extends State<CetakScreen> {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: "http://192.168.236.129:8000/api", // Ganti dengan URL Laravel API Anda
+      baseUrl: "http://192.168.236.83:8000/api", // Ganti dengan URL Laravel API Anda
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {"Content-Type": "application/json"},

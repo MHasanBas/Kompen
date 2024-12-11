@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
       }
 
       final response = await _dio.post(
-        'http://192.168.236.129:8000/api/dashboardmhs',
+        'https://sukakompen.kufoto.my.id/api/dashboardmhs',
         options: Options(
           headers: {
             'Authorization': 'Bearer $authToken',

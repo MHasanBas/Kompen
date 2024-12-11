@@ -18,7 +18,7 @@ class LihatTugasPage extends StatefulWidget {
 class _LihatTugasPageState extends State<LihatTugasPage> {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: "http://192.168.236.129:8000/api", // Ganti dengan URL backend Laravel Anda
+      baseUrl: "https://sukakompen.kufoto.my.id/api", // Ganti dengan URL backend Laravel Anda
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
@@ -158,10 +158,13 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
                                           color: Colors.blueAccent.withOpacity(0.2),
                                           shape: BoxShape.circle,
                                         ),
-                                        child: const Icon(
-                                          Icons.assignment,
-                                          size: 40,
-                                          color: Colors.blue,
+                                        child: Column(
+                                          children: [
+                                            Image.asset(
+                                              'assets/task.jpg', // Path gambar di project Anda
+                                              height: 70,
+                                            ),
+                                          ],
                                         ),
                                       ),
                                       const SizedBox(width: 16),

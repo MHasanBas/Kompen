@@ -18,7 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final Dio dio = Dio();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final String urlLogin = "http://192.168.236.129:8000/api/login";
+  final String urlLogin = "https://sukakompen.kufoto.my.id/api/login";
 
   @override
   void dispose() {
@@ -27,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  // Function to save user credentials including token
   Future<void> saveUserCredentials(String userId, String levelId, String token) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_id', userId); // Save user_id
@@ -114,10 +115,11 @@ class _LoginPageState extends State<LoginPage> {
         final data = response.data;
         final String? levelId = data['user']['level_id']?.toString();
         final String userName = data['user']['nama'] ?? 'Pengguna';
-        final String userId = data['user']['id'].toString();
-        final String token = data['token'];
+        final String userId = data['user']['id'].toString(); // Save user_id
+        final String token = data['token']; // Save the token
 
         if (levelId != null && token.isNotEmpty) {
+          // Save user_id, level_id, and token in SharedPreferences
           await saveUserCredentials(userId, levelId, token);
 
           showLoginResultDialog(context, 'Selamat datang, $userName!', true, levelId);
@@ -148,95 +150,104 @@ class _LoginPageState extends State<LoginPage> {
     return prefs.getString('level_id');
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    
+    body: Container(
+      // Menambahkan warna latar belakang
+      decoration: BoxDecoration(
+        color: Colors.blue[100], // Warna latar belakang
+        image: const DecorationImage(
+          image: AssetImage('assets/images/men.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Column(
         children: [
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
+          const SizedBox(height: 80), // Spasi atas untuk teks "Suka Kompen."
+          // Memindahkan teks "Suka Kompen." ke bagian atas
+          Text(
+            "Suka Kompen.",
+            style: GoogleFonts.poppins(
+              textStyle: const TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
                 color: Color.fromARGB(255, 0, 30, 130),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
+              ),
+            ),
+          ),
+          const SizedBox(height: 30), // Spasi antara teks dan TextField
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0), // Padding horizontal
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                buildTextField(
+                  controller: usernameController,
+                  hintText: "Username",
+                ),
+                const SizedBox(height: 20),
+                buildTextField(
+                  controller: passwordController,
+                  hintText: "Password",
+                  isPassword: true,
+                ),
+              ],
+            ),
+          ),
+          const Spacer(), // Mendorong tombol Login ke bawah layar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: ElevatedButton(
+              onPressed: () {
+                FocusScope.of(context).unfocus();
+                login(usernameController.text, passwordController.text);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue[900],
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 50,
+                  vertical: 15,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              child: Center(
-                child: Text(
-                  "Suka Kompen.",
-                  style: GoogleFonts.poppins(
-                    textStyle: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+              child: const Text(
+                "Login",
+                style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Center(
+            child: TextButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RegisterPage(),
+                ),
+              ),
+              child: Text(
+                "Belum punya akun? Register",
+                style: GoogleFonts.poppins(
+                  textStyle: TextStyle(
+                    fontSize: 16,
+                    color: Colors.blue[900],
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 30),
-                  buildTextField(
-                      controller: usernameController, hintText: "Username"),
-                  const SizedBox(height: 20),
-                  buildTextField(
-                      controller: passwordController,
-                      hintText: "Password",
-                      isPassword: true),
-                  const SizedBox(height: 40),
-                  ElevatedButton(
-                    onPressed: () {
-                      FocusScope.of(context).unfocus();
-                      login(usernameController.text, passwordController.text);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[900],
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 50, vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      "Login",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextButton(
-                    onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>  RegisterPage(),
-                        )),
-                    child: Text(
-                      "Belum punya akun? Register",
-                      style: GoogleFonts.poppins(
-                        textStyle: TextStyle(
-                          fontSize: 16,
-                          color: Colors.blue[900],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          const SizedBox(height: 30), // Spasi bawah untuk margin
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget buildTextField(
       {required TextEditingController controller,
