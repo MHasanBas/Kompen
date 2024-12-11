@@ -8,6 +8,7 @@ import 'tasks_screen.dart';
 import 'home_page.dart';
 import 'ProfilePage.dart';
 import 'package:intl/intl.dart';
+import '../about_page.dart';
 
 class ApiService {
   final Dio _dio = Dio(
@@ -100,10 +101,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        backgroundColor: Colors.white,
         title: Text(
           'Suka Kompen.',
           style: GoogleFonts.poppins(
@@ -114,8 +115,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
           ),
         ),
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        toolbarHeight: 90,
+        toolbarHeight: 89.0,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.info_outline, // Icon info
+              color: Color(0xFF191970), // Warna icon
+            ),
+            tooltip: 'Tentang Pengembang', // Tooltip pada icon
+            onPressed: () {
+              // Navigasi ke AboutPage saat ikon ditekan
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutPage()),
+              );
+            },
+          ),
+        ],
       ),
     
       body: _isLoading

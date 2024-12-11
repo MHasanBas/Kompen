@@ -10,6 +10,7 @@ import 'notifikasi.dart';
 import 'task_approval_page.dart';
 import 'ProfilePage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../about_page.dart';
 
 class AddTaskPage extends StatefulWidget {
   @override
@@ -176,22 +177,38 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   @override
 Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Suka Kompen.',
-          style: GoogleFonts.poppins(
-            textStyle: const TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF191970),
-            ),
+  return Scaffold(
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
+      title: Text(
+        'Suka Kompen.',
+        style: GoogleFonts.poppins(
+          textStyle: const TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF191970),
           ),
         ),
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        toolbarHeight: 90,
       ),
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      toolbarHeight: 90,
+      actions: [
+        IconButton(
+          icon: Icon(
+            Icons.info_outline, // Icon untuk info
+            color: Color(0xFF191970), // Warna icon
+          ),
+          onPressed: () {
+            // Navigasi ke halaman Tentang Pengembang
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AboutPage()),
+            );
+          },
+          tooltip: 'Info Pengembang', // Teks saat icon di-hover (opsional)
+        ),
+      ],
+    ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(

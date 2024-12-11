@@ -6,6 +6,7 @@ import 'task_approval_page.dart';
 import 'notifikasi.dart';
 import 'dashboard.dart';  // Ensure this is properly imported
 import 'package:google_fonts/google_fonts.dart';
+import '../about_page.dart';
 
 class Mahasiswa {
   final String nim;

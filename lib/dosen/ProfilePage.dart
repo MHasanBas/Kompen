@@ -4,6 +4,7 @@ import 'package:kompen/dosen/add_task_page.dart';
 import 'dashboard.dart';
 import 'task_approval_page.dart';
 import 'notifikasi.dart';
+import '../about_page.dart';
 
 
 class Profilescreen extends StatelessWidget {
@@ -26,6 +27,22 @@ class Profilescreen extends StatelessWidget {
         ),
         toolbarHeight: 89.0,
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.info_outline, // Icon info
+              color: Color(0xFF191970), // Warna icon
+            ),
+            tooltip: 'Tentang Pengembang', // Tooltip pada icon
+            onPressed: () {
+              // Navigasi ke AboutPage saat ikon ditekan
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutPage()),
+              );
+            },
+          ),
+        ],
       ),
       backgroundColor: const Color(0xFFF9F9F9),
       body: Padding(

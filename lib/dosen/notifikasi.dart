@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'Cek_Tugas.dart';
 import 'add_task_page.dart';
 import 'package:dio/dio.dart';
+import '../about_page.dart';
 
 class NotifikasiPage extends StatefulWidget {
   const NotifikasiPage({super.key});
@@ -62,7 +63,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -78,6 +79,22 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
         ),
         toolbarHeight: 89.0,
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.info_outline, // Icon info
+              color: Color(0xFF191970), // Warna icon
+            ),
+            tooltip: 'Tentang Pengembang', // Tooltip pada icon
+            onPressed: () {
+              // Navigasi ke AboutPage saat ikon ditekan
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutPage()),
+              );
+            },
+          ),
+        ],
       ),
       backgroundColor: const Color(0xFFF9F9F9),
       body: Padding(
@@ -85,15 +102,37 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Cek Tugas',
-              style: GoogleFonts.poppins(
-                textStyle: const TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black54,
+            // Judul Cek Tugas
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Cek Tugas',
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54,
+                    ),
+                  ),
                 ),
-              ),
+                // Tambahkan Icon "Refresh" di samping judul
+                IconButton(
+                  icon: const Icon(
+                    Icons.refresh,
+                    color: Colors.blueAccent,
+                  ),
+                  tooltip: 'Refresh Halaman',
+                  onPressed: () {
+                    // Aksi refresh (opsional)
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Halaman di-refresh!'),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
             isLoading
             ? const Center(child: CircularProgressIndicator())

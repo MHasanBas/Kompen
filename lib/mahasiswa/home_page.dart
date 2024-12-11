@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import 'package:kompen/mahasiswa/qr_code_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../about_page.dart';
 import 'akumulasi_page.dart';
 import 'kompen_card.dart';
 import 'history_screen.dart';
@@ -81,7 +81,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -97,6 +97,22 @@ class _HomePageState extends State<HomePage> {
         ),
         toolbarHeight: 89.0,
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.info_outline, // Icon info
+              color: Color(0xFF191970), // Warna icon
+            ),
+            tooltip: 'Tentang Pengembang', // Tooltip pada icon
+            onPressed: () {
+              // Navigasi ke AboutPage saat ikon ditekan
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutPage()),
+              );
+            },
+          ),
+        ],
       ),
       backgroundColor: const Color(0xFFF9F9F9),
       body: Padding(

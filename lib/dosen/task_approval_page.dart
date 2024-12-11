@@ -6,6 +6,7 @@ import 'add_task_page.dart';
 import 'notifikasi.dart';
 import 'ProfilePage.dart';
 import 'dashboard.dart';
+import '../about_page.dart';
 
 final Dio dio = Dio();
 
@@ -97,7 +98,7 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+    Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -113,6 +114,22 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
         ),
         toolbarHeight: 89.0,
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.info_outline, // Icon info
+              color: Color(0xFF191970), // Warna icon
+            ),
+            tooltip: 'Tentang Pengembang', // Tooltip pada icon
+            onPressed: () {
+              // Navigasi ke AboutPage saat ikon ditekan
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutPage()),
+              );
+            },
+          ),
+        ],
       ),
       backgroundColor: const Color(0xFFF9F9F9),
       body: Column(

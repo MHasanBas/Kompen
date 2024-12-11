@@ -99,6 +99,12 @@ flutter:
     - assets/task.jpg
     - assets/images/men.png
     - assets/description.png
+    - assets/images/skk.gif
+    - assets/images/logok.png
+    - assets/images/developer3.png
+    - assets/images/developer1.png
+    - assets/images/developer2.png
+    - assets/images/developer4.png
   
 
   # The following line ensures that the Material Icons font is

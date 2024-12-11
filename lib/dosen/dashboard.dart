@@ -10,6 +10,7 @@ import 'add_task_page.dart';
 import 'alpha_mahasiswa_page.dart ';
 import 'KompenMahasiswaPage.dart';
 import 'qr_code_page.dart';
+import '../about_page.dart';
 
 class HomeScreen extends StatelessWidget {
   final List<Task> tasks = [
@@ -26,21 +27,38 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Suka Kompen.',
-          style: GoogleFonts.poppins(
-            textStyle: const TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF191970),
-            ),
+  return Scaffold(
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
+      title: Text(
+        'Suka Kompen.',
+        style: GoogleFonts.poppins(
+          textStyle: const TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF191970),
           ),
         ),
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        toolbarHeight: 90,
       ),
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      toolbarHeight: 90,
+      actions: [
+        IconButton(
+          icon: Icon(
+            Icons.info_outline, // Icon untuk info
+            color: Color(0xFF191970), // Warna icon
+          ),
+          onPressed: () {
+            // Navigasi ke halaman Tentang Pengembang
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AboutPage()),
+            );
+          },
+          tooltip: 'Info Pengembang', // Teks saat icon di-hover (opsional)
+        ),
+      ],
+    ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

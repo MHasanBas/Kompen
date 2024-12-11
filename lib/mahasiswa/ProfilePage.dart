@@ -6,6 +6,7 @@ import 'notification_screen.dart';
 import 'home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
+import '../about_page.dart';
 
 
 class ProfilePage extends StatefulWidget {
@@ -80,7 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
 
   @override
-  Widget build(BuildContext context) {
+Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -89,10 +90,26 @@ class _ProfilePageState extends State<ProfilePage> {
           style: TextStyle(
             fontSize: 24.0,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF191970),
+            color: Color(0xFF191970), // Warna biru tua
           ),
         ),
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.info_outline, // Icon info
+              color: Color(0xFF191970), // Warna icon
+            ),
+            tooltip: 'Tentang Pengembang', // Tooltip pada icon
+            onPressed: () {
+              // Navigasi ke AboutPage saat ikon ditekan
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutPage()),
+              );
+            },
+          ),
+        ],
       ),
       backgroundColor: const Color(0xFFF9F9F9),
       body: Padding(

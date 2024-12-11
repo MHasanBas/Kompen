@@ -9,6 +9,7 @@ import 'tasks_screen.dart';
 import 'history_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../about_page.dart';
 
 class ApiService {
   final Dio _dio = Dio(
@@ -131,7 +132,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-         automaticallyImplyLeading: false,
+        automaticallyImplyLeading: false,
         title: Text(
           'Suka Kompen.',
           style: GoogleFonts.poppins(
@@ -145,6 +146,22 @@ class _NotificationScreenState extends State<NotificationScreen> {
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         toolbarHeight: 90, // Tinggi AppBar
         elevation: 0, // Menghapus bayangan
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.info_outline, // Icon info
+              color: Color(0xFF191970), // Warna icon
+            ),
+            tooltip: 'Tentang Pengembang', // Tooltip pada icon
+            onPressed: () {
+              // Navigasi ke AboutPage saat ikon ditekan
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutPage()),
+              );
+            },
+          ),
+        ],
       ),
       body: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
