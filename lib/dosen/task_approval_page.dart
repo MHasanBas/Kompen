@@ -3,9 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'add_task_page.dart';
+import 'dashboard.dart';
 import 'notifikasi.dart';
 import 'ProfilePage.dart';
-import 'dashboard.dart';
 
 final Dio dio = Dio();
 
@@ -35,38 +35,52 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
   }
 
   Future<void> fetchTasks() async {
-    setState(() {
-      isLoading = true;
-    });
+  setState(() {
+    isLoading = true;
+  });
 
-    try {
-      String? authToken = await getAuthToken();
-      if (authToken == null) {
-        throw Exception('Token tidak ditemukan');
-      }
-
-      final response = await dio.post(
-        urlApprovalData,
-        options: Options(
-          headers: {'Authorization': 'Bearer $authToken'},
-        ),
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          tasks = List<Map<String, dynamic>>.from(response.data);
-        });
-      } else {
-        throw Exception('Failed to load tasks');
-      }
-    } catch (e) {
-      print('Error fetching tasks: $e');
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
+  try {
+    String? authToken = await getAuthToken();
+    if (authToken == null) {
+      throw Exception('Token tidak ditemukan');
     }
+
+    final response = await dio.post(
+      urlApprovalData,
+      options: Options(
+        headers: {'Authorization': 'Bearer $authToken'},
+      ),
+    );
+
+    print('Response data: ${response.data}'); // Debugging Response
+
+    final pendingData = response.data['pending'];
+
+    // Pastikan pendingData adalah Map dan bukan Null
+    if (pendingData is Map<String, dynamic>) {
+      tasks = pendingData.entries.map((entry) {
+        final value = entry.value;
+
+        return {
+          'tugas': value['tugas'] ?? {},
+          'apply': value['apply'] ?? [],
+        };
+      }).toList();
+    } else {
+      tasks = [];
+    }
+  } catch (e) {
+    print('Error fetching tasks: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Gagal mengambil data tugas')),
+    );
+  } finally {
+    setState(() {
+      isLoading = false;
+    });
   }
+}
+
 
   Future<void> updateStatus(int applyId, bool isApproved) async {
     try {
@@ -167,17 +181,22 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
                               (task['apply'] as List).isNotEmpty ? task['apply'][0] : null;
 
                           return Card(
-                            margin: const EdgeInsets.all(10),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.all(10),
-                              leading: const Icon(Icons.assignment, size: 50),
-                              title: Text(
-                                tugas?['tugas_nama'] ?? 'Nama Tugas Tidak Ditemukan',
-                              ),
-                              subtitle: Text(
-                                '${tugas?['nama'] ?? 'Unknown user'} - '
-                                'Status: ${apply?['apply_status'] ?? 'Pending'}',
-                              ),
+                          margin: const EdgeInsets.all(10),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(10),
+                            leading: Image.asset(
+                              'assets/task.jpg', // Update this with your image path
+                              width: 50, // Set the width as per your design
+                              height: 50, // Set the height as per your design
+                              fit: BoxFit.cover, // Adjust the image fitting
+                            ),
+                            title: Text(
+                              tugas?['tugas_nama'] ?? 'Nama Tugas Tidak Ditemukan',
+                            ),
+                            subtitle: Text(
+                              'Status: ${apply?['apply_status'] ?? 'Pending'}',
+                            ),
+  
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [

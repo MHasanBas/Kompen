@@ -239,7 +239,7 @@ class _CekTugasPageState extends State<CekTugasPage> {
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          Image.asset('/images/task_image.png', height: 100),
+                          Image.asset('assets/description.png', height: 200),
                           const SizedBox(height: 10),
                           Text(
                             taskDetail["mahasiswa_nama"] ?? "Nama mahasiswa tidak tersedia",
