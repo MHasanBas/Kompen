@@ -13,16 +13,14 @@ class Mahasiswa {
   final String nama;
   final int jamAlpa;
   final int tugasJamKompen;
-  final String tugasDeskripsi;
-  final String tugasTenggat;
+ 
 
   Mahasiswa({
     required this.nim,
     required this.nama,
     required this.jamAlpa,
     required this.tugasJamKompen,
-    required this.tugasDeskripsi,
-    required this.tugasTenggat,
+    
   });
 
   factory Mahasiswa.fromJson(Map<String, dynamic> json) {
@@ -30,9 +28,8 @@ class Mahasiswa {
       nim: json['mahasiswa_alpa_nim'] ?? '',
       nama: json['mahasiswa_alpa_nama'] ?? '',
       jamAlpa: json['jam_alpa'] ?? 0,
-      tugasJamKompen: json['approval']?['tugas']?['tugas_jam_kompen'] ?? '',
-      tugasDeskripsi: json['approval']?['tugas']?['tugas_deskripsi'] ?? '',
-      tugasTenggat: json['approval']?['tugas']?['tugas_tenggat'] ?? '',
+      tugasJamKompen: json['jam_kompen'] ?? '',
+      
     );
   }
 }
@@ -53,7 +50,7 @@ class _AlphaMahasiswaPageState extends State<AlphaMahasiswaPage> {
 
   Future<List<Mahasiswa>> fetchMahasiswaAlpha() async {
     Dio dio = Dio();
-    final String apiUrl = 'https://sukakompen.kufoto.my.id/api/alpa'; // Replace with your API URL
+    final String apiUrl = 'https://kompen.kufoto.my.id/api/alpa'; // Replace with your API URL
 
     try {
       final response = await dio.post(

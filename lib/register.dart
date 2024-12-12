@@ -13,7 +13,7 @@ final TextEditingController namaController = TextEditingController();
 final TextEditingController passwordController = TextEditingController();
 final TextEditingController confirmPasswordController = TextEditingController();
 
-String url_domain = "https://sukakompen.kufoto.my.id";
+String url_domain = "https://kompen.kufoto.my.id";
 String url_create_data = url_domain + "/api/create_data";
 String url_get_levels = url_domain + "/api/levels";
 

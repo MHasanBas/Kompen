@@ -18,7 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final Dio dio = Dio();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final String urlLogin = "https://sukakompen.kufoto.my.id/api/login";
+  final String urlLogin = "https://kompen.kufoto.my.id/api/login";
 
   @override
   void dispose() {

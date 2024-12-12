@@ -5,7 +5,7 @@ import 'task_detail_screen.dart';
 final Dio dio = Dio(); // Inisialisasi Dio untuk HTTP request
 
 // URL API
-final String baseUrl = "https://sukakompen.kufoto.my.id/api/tugas";
+final String baseUrl = "https://kompen.kufoto.my.id/api/tugas";
 
 class TasksScreen extends StatefulWidget {
   @override

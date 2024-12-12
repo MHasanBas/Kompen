@@ -9,7 +9,7 @@ import 'home_page.dart';
 
 final Dio dio = Dio();
 
-String url_domain = "https://sukakompen.kufoto.my.id";
+String url_domain = "https://kompen.kufoto.my.id";
 String url_detail_data = url_domain + "/api/tugas/show";
 String url_apply_data = url_domain + "/api/apply";
 

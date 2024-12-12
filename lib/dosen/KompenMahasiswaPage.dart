@@ -36,7 +36,7 @@ class KompenMahasiswaPage extends StatefulWidget {
 }
 
 class _KompenMahasiswaPageState extends State<KompenMahasiswaPage> {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'https://sukakompen.kufoto.my.id/api'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'https://kompen.kufoto.my.id/api'));
   late ApiService _apiService;
   List<dynamic> _tasks = [];
 

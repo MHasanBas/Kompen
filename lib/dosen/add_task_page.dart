@@ -31,7 +31,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   List<dynamic> _jenisTugasOptions = [];
   List<dynamic> _bidangKompetensiOptions = [];
 
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'https://sukakompen.kufoto.my.id/api'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'https://kompen.kufoto.my.id/api'));
 
   @override
   void initState() {

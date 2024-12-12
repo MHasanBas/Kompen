@@ -50,14 +50,14 @@ class AboutPage extends StatelessWidget {
                   ),
                   DeveloperCard(
                     name: "Faiz Abiyu",
-                    role: "Backend Developer",
+                    role: "Backend Developer web",
                     imagePath: "assets/images/developer2.png",
                     icon: Icons.code,
                     roleColor: Colors.indigo,
                   ),
                   DeveloperCard(
                     name: "Fahmi Mardiansyah",
-                    role: "Frontend Developer",
+                    role: "Frontend Developer web",
                     imagePath: "assets/images/developer3.png",
                     icon: Icons.web,
                     roleColor: Colors.orange,

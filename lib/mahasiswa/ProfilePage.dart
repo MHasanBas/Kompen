@@ -38,7 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
       }
 
       final response = await _dio.post(
-        'https://sukakompen.kufoto.my.id/api/profilemhs', // Ganti dengan endpoint API Anda
+        'https://kompen.kufoto.my.id/api/profilemhs', // Ganti dengan endpoint API Anda
         options: Options(
           headers: {
             'Authorization': 'Bearer $authToken',

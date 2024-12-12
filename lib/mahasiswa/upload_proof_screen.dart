@@ -36,7 +36,7 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
 
     try {
       final response = await dio.post(
-        'https://sukakompen.kufoto.my.id/api/show_tugas', // Replace with the correct API URL
+        'https://kompen.kufoto.my.id/api/show_tugas', // Replace with the correct API URL
         data: {'tugas_id': tugasId}, // Send tugasId in the request body
       );
 
@@ -84,7 +84,7 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
       Dio dio = Dio();
       try {
         final response = await dio.post(
-          'https://sukakompen.kufoto.my.id/api/upload', // Replace with your actual API URL
+          'https://kompen.kufoto.my.id/api/upload', // Replace with your actual API URL
           data: formData,
         );
 
@@ -105,7 +105,7 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
     Dio dio = Dio();
     try {
       final response = await dio.post(
-        'https://sukakompen.kufoto.my.id/api/kirim', // Your API URL for sending the task
+        'https://kompen.kufoto.my.id/api/kirim', // Your API URL for sending the task
         data: {
           'progress_id': widget.applyId, // Send the progress_id as part of the request body
         },

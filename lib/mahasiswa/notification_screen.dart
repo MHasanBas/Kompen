@@ -14,7 +14,7 @@ import '../about_page.dart';
 class ApiService {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'https://sukakompen.kufoto.my.id', // Ganti dengan IP server Anda
+      baseUrl: 'https://kompen.kufoto.my.id', // Ganti dengan IP server Anda
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',

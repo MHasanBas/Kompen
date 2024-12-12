@@ -31,7 +31,7 @@ class _AkumulasiPageState extends State<AkumulasiPage> {
       }
 
       final response = await _dio.post(
-        'https://sukakompen.kufoto.my.id/api/akumulasi', // Ubah endpoint ke API Akumulasi
+        'https://kompen.kufoto.my.id/api/akumulasi', // Ubah endpoint ke API Akumulasi
         options: Options(
           headers: {
             'Authorization': 'Bearer $authToken',

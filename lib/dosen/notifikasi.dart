@@ -35,7 +35,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
       Dio dio = Dio();
       dio.options.headers['Authorization'] = 'Bearer $authToken';
       final response = await dio.post(
-        'https://sukakompen.kufoto.my.id/api/cek_tugas',
+        'https://kompen.kufoto.my.id/api/cek_tugas',
       );
       if (response.statusCode == 200) {
         setState(() {
