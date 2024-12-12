@@ -4,12 +4,13 @@ import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path_helper;
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'lihat_tugas.dart';
 import 'dashboard.dart';
 import 'notifikasi.dart';
 import 'task_approval_page.dart';
 import 'ProfilePage.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../about_page.dart';
 
 class AddTaskPage extends StatefulWidget {
@@ -24,7 +25,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   String _tipeTugas = 'Online';
   String? _jenisTugas;
-  String? _bidangKompetensi;
+  List<String> _selectedBidangKompetensi = [];
   String _bobotTugas = '1 Jam';
   String? _filePath;
 
@@ -159,6 +160,11 @@ class _AddTaskPageState extends State<AddTaskPage> {
       return;
     }
 
+    if (_selectedBidangKompetensi.isEmpty) {
+      _showErrorAlert('Bidang Kompetensi harus dipilih');
+      return;
+    }
+
     final Map<String, dynamic> taskData = {
       'user_id': 1, // Replace with actual user ID
       'tugas_nama': _namaTugasController.text,
@@ -169,46 +175,45 @@ class _AddTaskPageState extends State<AddTaskPage> {
       'tugas_kuota': 1,
       'tugas_jam_kompen': int.parse(_bobotTugas.split(' ')[0]),
       'tugas_tenggat': DateFormat('yyyy-MM-dd').format(_selectedDate),
-      'kompetensi_id': _bidangKompetensi,
+      'kompetensi_id': _selectedBidangKompetensi,
     };
 
     _addTask(taskData, context);
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      automaticallyImplyLeading: false,
-      title: Text(
-        'Suka Kompen.',
-        style: GoogleFonts.poppins(
-          textStyle: const TextStyle(
-            fontSize: 24.0,
-            fontWeight: FontWeight.w900,
-            color: Color(0xFF191970),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text(
+          'Suka Kompen.',
+          style: GoogleFonts.poppins(
+            textStyle: const TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF191970),
+            ),
           ),
         ),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+        toolbarHeight: 90,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: Color(0xFF191970),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutPage()),
+              );
+            },
+            tooltip: 'Info Pengembang',
+          ),
+        ],
       ),
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-      toolbarHeight: 90,
-      actions: [
-        IconButton(
-          icon: Icon(
-            Icons.info_outline, // Icon untuk info
-            color: Color(0xFF191970), // Warna icon
-          ),
-          onPressed: () {
-            // Navigasi ke halaman Tentang Pengembang
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AboutPage()),
-            );
-          },
-          tooltip: 'Info Pengembang', // Teks saat icon di-hover (opsional)
-        ),
-      ],
-    ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -305,29 +310,35 @@ Widget build(BuildContext context) {
               ),
               SizedBox(height: 16),
 
+             Text("Bidang Kompetensi", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+Wrap(
+  spacing: 8.0, // Horizontal space between checkboxes
+  runSpacing: 8.0, // Vertical space between rows
+  children: _bidangKompetensiOptions.map((dynamic value) {
+    return Container(
+      width: (MediaQuery.of(context).size.width - 40) / 2, // Set the width for two columns
+      child: CheckboxListTile(
+        title: Text(value['kompetensi_nama'], style: TextStyle(fontSize: 14)), // Smaller text size
+        value: _selectedBidangKompetensi.contains(value['kompetensi_id'].toString()),
+        onChanged: (bool? selected) {
+          setState(() {
+            if (selected == true) {
+              _selectedBidangKompetensi.add(value['kompetensi_id'].toString());
+            } else {
+              _selectedBidangKompetensi.remove(value['kompetensi_id'].toString());
+            }
+          });
+        },
+        controlAffinity: ListTileControlAffinity.leading,
+      ),
+    );
+  }).toList(),
+),
+
+              SizedBox(height: 16),
+
               Row(
                 children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _bidangKompetensi,
-                      decoration: InputDecoration(
-                        labelText: "Bidang Kompetensi",
-                        border: OutlineInputBorder(),
-                      ),
-                      items: _bidangKompetensiOptions.map<DropdownMenuItem<String>>((dynamic value) {
-                        return DropdownMenuItem<String>(
-                          value: value['kompetensi_id'].toString(),
-                          child: Text(value['kompetensi_nama']),
-                        );
-                      }).toList(),
-                      onChanged: (newValue) {
-                        setState(() {
-                          _bidangKompetensi = newValue;
-                        });
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 16),
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: _bobotTugas,
@@ -348,20 +359,21 @@ Widget build(BuildContext context) {
                       },
                     ),
                   ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: "Tenggat Tugas",
+                        border: OutlineInputBorder(),
+                      ),
+                      controller: TextEditingController(
+                        text: DateFormat('yyyy-MM-dd').format(_selectedDate),
+                      ),
+                      onTap: () => _selectDate(context),
+                    ),
+                  ),
                 ],
-              ),
-              SizedBox(height: 16),
-
-              TextFormField(
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: "Tenggat Tugas",
-                  border: OutlineInputBorder(),
-                ),
-                controller: TextEditingController(
-                  text: DateFormat('yyyy-MM-dd').format(_selectedDate),
-                ),
-                onTap: () => _selectDate(context),
               ),
               SizedBox(height: 16),
 
@@ -394,7 +406,7 @@ Widget build(BuildContext context) {
           ),
         ),
       ),
-        bottomNavigationBar: BottomAppBar(
+      bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 5,
         color: Colors.indigo[900],
@@ -409,16 +421,13 @@ Widget build(BuildContext context) {
                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) =>
-                             HomeScreen()), // Open NotifikasiPage
+                        builder: (context) => HomeScreen()),
                   );
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.access_time,
-                    color: Colors.white, size: 30),
+                icon: const Icon(Icons.access_time, color: Colors.white, size: 30),
                 onPressed: () {
-
                   Navigator.push(context, MaterialPageRoute(builder: (context) => TaskApprovalPage()));
                 },
               ),
@@ -429,8 +438,7 @@ Widget build(BuildContext context) {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) =>
-                            const NotifikasiPage()), // Open NotifikasiPage
+                        builder: (context) => const NotifikasiPage()),
                   );
                 },
               ),
@@ -451,6 +459,7 @@ Widget build(BuildContext context) {
       floatingActionButton: Container(
         width: 90,
         height: 90,
+
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.blueAccent,

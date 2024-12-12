@@ -104,6 +104,7 @@ flutter:
     - assets/images/developer1.png
     - assets/images/developer2.png
     - assets/images/developer4.png
+    - assets/images/task.png
   
 
   # The following line ensures that the Material Icons font is

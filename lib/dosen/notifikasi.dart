@@ -16,45 +16,53 @@ class NotifikasiPage extends StatefulWidget {
 }
 
 class _NotifikasiPageState extends State<NotifikasiPage> {
-  List<dynamic> tugasList = [];
-  bool isLoading = true;
+  List<dynamic> tugasList = []; // List untuk menampung data tugas
+  bool isLoading = true; // State untuk loading
 
+  // Fungsi untuk mengambil token autentikasi
   Future<String?> getAuthToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('auth_token');
   }
 
-  Future<void> fetchNotifications() async {
-    try {
-      String? authToken = await getAuthToken();
-      if (authToken == null) {
-        throw Exception('Token tidak ditemukan');
-      }
+  // Fungsi untuk mengambil notifikasi tugas dari API
+ Future<void> fetchNotifications() async {
+  try {
+    String? authToken = await getAuthToken();
+    if (authToken == null) {
+      throw Exception('Token tidak ditemukan');
+    }
 
-      Dio dio = Dio();
-      dio.options.headers['Authorization'] = 'Bearer $authToken';
-      final response = await dio.post(
-        'https://kompen.kufoto.my.id/api/cek_tugas',
-      );
-      if (response.statusCode == 200) {
-        setState(() {
-          // Assuming response.data is a Map where the key is the task ID
-          tugasList = response.data.values.toList();  // Convert the response into a list
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-        print('Failed to fetch data');
-      }
-    } catch (e) {
+    Dio dio = Dio();
+    dio.options.headers['Authorization'] = 'Bearer $authToken';
+
+    final response = await dio.post(
+      'https://kompen.kufoto.my.id/api/cek_tugas',
+    );
+
+    if (response.statusCode == 200 && response.data != null) {
+      print("Response Data: ${response.data}"); // Debug respons dari API
+      setState(() {
+        // Mengubah data menjadi List agar bisa di-loop
+        tugasList = response.data.entries.map((entry) {
+          return entry.value; // Ambil nilai dari setiap key numerik
+        }).toList();
+        isLoading = false;
+      });
+    } else {
       setState(() {
         isLoading = false;
       });
-      print('Error: $e');
+      print('Failed to fetch data: ${response.statusCode}');
     }
+  } catch (e) {
+    setState(() {
+      isLoading = false;
+    });
+    print('Error: $e');
   }
+}
+
 
   @override
   void initState() {
@@ -137,7 +145,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                                               BorderRadius.circular(8),
                                         ),
                                         child: Image.asset(
-                                          '/images/task_image.png',
+                                          'assets/images/task.png',
                                           fit: BoxFit.cover,
                                         ),
                                       ),
@@ -149,7 +157,8 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                                           children: [
                                             Text(
                                               tugasItem['tugas']
-                                                      ['tugas_nama'] ?? 'Nama Tugas Tidak Ditemukan',
+                                                      ['tugas_nama'] ??
+                                                  'Nama Tugas Tidak Ditemukan',
                                               style: GoogleFonts.poppins(
                                                 textStyle: const TextStyle(
                                                   fontSize: 16,
@@ -192,7 +201,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                                               tugasItem['tugas']['tugas_id'];
 
                                           print(
-                                              'Fetching data for tugasId: $tugasId and approvalId: $approvalId and progressId: $progressId');
+                                              'Navigating to tugasId: $tugasId');
 
                                           Navigator.push(
                                             context,
@@ -230,7 +239,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 5,
-        color: Colors.indigo[900],
+        color: const Color(0xFF191970),
         child: SizedBox(
           height: 70,
           child: Row(
@@ -239,8 +248,10 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
               IconButton(
                 icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => HomeScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
                 },
               ),
               IconButton(
@@ -248,9 +259,9 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                     color: Colors.white, size: 30),
                 onPressed: () {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => TaskApprovalPage()));
+                    context,
+                    MaterialPageRoute(builder: (context) => TaskApprovalPage()),
+                  );
                 },
               ),
               const SizedBox(width: 50),
