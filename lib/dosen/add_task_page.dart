@@ -5,7 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path_helper;
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'lihat_tugas.dart';
 import 'dashboard.dart';
 import 'notifikasi.dart';
@@ -31,6 +31,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   List<dynamic> _jenisTugasOptions = [];
   List<dynamic> _bidangKompetensiOptions = [];
+
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+    print('Auth Token: $token');  // Debug the token value
+    return token;
+  }
 
   final Dio _dio = Dio(BaseOptions(baseUrl: 'https://kompen.kufoto.my.id/api'));
 
@@ -81,30 +88,56 @@ class _AddTaskPageState extends State<AddTaskPage> {
   }
 
   Future<void> _addTask(Map<String, dynamic> taskData, BuildContext context) async {
-    try {
-      FormData formData = FormData.fromMap(taskData);
-      
-      if (_filePath != null) {
-        formData.files.add(
-          MapEntry(
-            "file_tugas",
-            await MultipartFile.fromFile(_filePath!, filename: path_helper.basename(_filePath!)),
-          ),
-        );
-      } else {
-        _showErrorAlert('Silakan pilih file terlebih dahulu');
-        return;
-      }
-
-      final response = await _dio.post('/tugas_dosen/create_data', data: formData);
-      
-      _showSuccessAlert(context);
-
-    } on DioError catch (e) {
-      print('Error: ${e.response?.statusCode} ${e.response?.data}');
-      _showErrorAlert('Gagal menambahkan tugas: ${e.response?.data['message'] ?? 'Terjadi kesalahan'}');
+  try {
+    FormData formData = FormData.fromMap(taskData);
+    
+    // Mengirim file jika ada
+    if (_filePath != null) {
+      formData.files.add(
+        MapEntry(
+          "file_tugas",
+          await MultipartFile.fromFile(_filePath!, filename: path_helper.basename(_filePath!)),
+        ),
+      );
     }
+
+    Dio dio = Dio();
+    String? authToken = await getAuthToken();
+    if (authToken == null) {
+      throw Exception('Token tidak ditemukan');
+    }
+
+    dio.options.headers['Authorization'] = 'Bearer $authToken';
+
+    final response = await dio.post('https://kompen.kufoto.my.id/api/tugas_dosen/create_data', data: formData);
+
+    if (response.statusCode == 200) {
+      // Menampilkan notifikasi sukses jika berhasil
+      _showSuccessAlert(context);
+    } else {
+      _showErrorAlert('Gagal menambahkan tugas: ${response.data['message'] ?? 'Terjadi kesalahan'}');
+    }
+  } on DioError catch (e) {
+    // Log the error details
+    print('Error: ${e.response?.statusCode} ${e.response?.data}');
+    
+    // Check for response body and display it
+    String errorMessage = 'Terjadi kesalahan';
+    if (e.response != null) {
+      // If there is a response, try to extract the message
+      errorMessage = e.response?.data['message'] ?? 'Tidak ada pesan kesalahan';
+    } else {
+      // Handle case where the error does not contain a response
+      errorMessage = e.message ?? 'Kesalahan tidak terduga';
+    }
+
+    _showErrorAlert('Gagal menambahkan tugas: $errorMessage');
+  } catch (e) {
+    // Handle any other errors (like network errors)
+    print('Unexpected Error: $e');
+    _showErrorAlert('Gagal menambahkan tugas: Terjadi kesalahan tak terduga');
   }
+}
 
   void _showSuccessAlert(BuildContext context) {
     Alert(
@@ -175,7 +208,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       'tugas_kuota': 1,
       'tugas_jam_kompen': int.parse(_bobotTugas.split(' ')[0]),
       'tugas_tenggat': DateFormat('yyyy-MM-dd').format(_selectedDate),
-      'kompetensi_id': _selectedBidangKompetensi,
+      'kompetensi_id[]': _selectedBidangKompetensi,  // Kirim sebagai array
     };
 
     _addTask(taskData, context);
