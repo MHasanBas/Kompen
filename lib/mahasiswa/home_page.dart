@@ -26,12 +26,12 @@ class _HomePageState extends State<HomePage> {
   String userTotal = "Loading...";
   List<dynamic> tugas = [];
 
+  final Dio _dio = Dio();
+
   Future<String?> getAuthToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('auth_token');
   }
-
-  final Dio _dio = Dio();
 
   Future<void> fetchData() async {
     try {
@@ -49,21 +49,33 @@ class _HomePageState extends State<HomePage> {
         ),
       );
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        setState(() {
-          userName = data['mahasiswa']['mahasiswa_nama'];
-          userNim = data['mahasiswa']['nim'];
-          userTotal = data['mahasiswa']['jumlah_alpa'].toString();
-          tugas = data['tugas'];
-        });
-      } else {
-        setState(() {
-          userName = "Failed to load data";
-          userNim = "Failed to load data";
-          tugas = [];
-        });
-      }
+if (response.statusCode == 200) {
+  final data = response.data;
+  print('Data: $data'); // Inspect the entire response structure
+  print('Tugas: ${data['tugas']}'); // Inspect just the 'tugas' field
+  
+  setState(() {
+    userName = data['mahasiswa']['mahasiswa_nama'];
+    userNim = data['mahasiswa']['nim'];
+    userTotal = data['mahasiswa']['jumlah_alpa'].toString();
+    
+    // Check if tugas is a map or a list and handle accordingly
+    if (data['tugas'] is List) {
+      tugas = List.from(data['tugas']);
+    } else if (data['tugas'] is Map) {
+      // If it's a map, you might need to extract its values or handle it differently
+      tugas = List.from(data['tugas'].values); // Example: converting map values into a list
+    } else {
+      tugas = [];
+    }
+  });
+} else {
+  setState(() {
+    userName = "Failed to load data";
+    userNim = "Failed to load data";
+    tugas = [];
+  });
+}
     } catch (e) {
       setState(() {
         userName = "Error: $e";

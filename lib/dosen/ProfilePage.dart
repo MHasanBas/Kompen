@@ -1,14 +1,86 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kompen/dosen/add_task_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
 import 'dashboard.dart';
 import 'task_approval_page.dart';
 import 'notifikasi.dart';
-import '../about_page.dart';
+import 'package:kompen/login_page.dart';
 
+class Profilescreen extends StatefulWidget {
+  const Profilescreen({super.key});
 
-class Profilescreen extends StatelessWidget {
-  const Profilescreen ({super.key});
+  @override
+  _ProfilescreenState createState() => _ProfilescreenState();
+}
+
+class _ProfilescreenState extends State<Profilescreen> {
+  String userName = "Loading...";
+  String userNidn = "Loading...";
+  String userPhone = "Loading...";
+  String userEmail = "Loading...";
+  String userImageUrl = "Loading...";
+  final Dio _dio = Dio();
+
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
+
+  Future<void> fetchProfileData() async {
+    try {
+      String? authToken = await getAuthToken();
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
+      final response = await _dio.post(
+        'https://kompen.kufoto.my.id/api/profiledsn', // Ganti dengan endpoint API Anda
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $authToken',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        setState(() {
+          // Adjusting the fields based on your controller's response format
+          if (data != null && data['data'] != null) {
+            var dosenData = data['data'];
+            userName = dosenData['dosen_nama'] ?? "Nama tidak tersedia";
+            userNidn = dosenData['nidn'] ?? "NIDN tidak tersedia";
+            userPhone = dosenData['dosen_no_telp'] ?? "Telepon tidak tersedia";
+            userEmail = dosenData['dosen_email'] ?? "Email tidak tersedia";
+          }
+          userImageUrl = data['image_url'] ?? "Default image URL";
+        });
+      } else {
+        setState(() {
+          userName = "Gagal memuat data";
+          userNidn = "Gagal memuat data";
+          userPhone = "Gagal memuat data";
+          userEmail = "Gagal memuat data";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        userName = "Error: $e";
+        userNidn = "Error: $e";
+        userPhone = "Error: $e";
+        userEmail = "Error: $e";
+      });
+      print('Error: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProfileData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,31 +99,14 @@ class Profilescreen extends StatelessWidget {
         ),
         toolbarHeight: 89.0,
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.info_outline, // Icon info
-              color: Color(0xFF191970), // Warna icon
-            ),
-            tooltip: 'Tentang Pengembang', // Tooltip pada icon
-            onPressed: () {
-              // Navigasi ke AboutPage saat ikon ditekan
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AboutPage()),
-              );
-            },
-          ),
-        ],
       ),
       backgroundColor: const Color(0xFFF9F9F9),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Profile Card with full width
             Container(
-              width: double.infinity, // Set to full width
+              width: double.infinity,
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: const Color(0xFF001C72),
@@ -59,28 +114,25 @@ class Profilescreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const CircleAvatar(
-                    radius: 100.0,
-                    backgroundColor: Colors.white,
-                    child: Icon(
-                      Icons.person,
-                      size: 130.0,
-                      color: Color(0xFF001C72),
-                    ),
-                  ),
+                CircleAvatar(
+  radius: 60.0, // Mengurangi ukuran menjadi lebih kecil
+  backgroundColor: Colors.white,
+  backgroundImage: NetworkImage(userImageUrl),
+),
+
                   const SizedBox(height: 16.0),
-                  const Text(
-                    "Septian Enggar",
-                    style: TextStyle(
+                  Text(
+                    userName,
+                    style: const TextStyle(
                       fontSize: 20.0,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const Text(
-                    "198909012019031010",
-                    style: TextStyle(
+                  Text(
+                    userNidn,
+                    style: const TextStyle(
                       fontSize: 16.0,
                       color: Colors.white,
                     ),
@@ -90,7 +142,6 @@ class Profilescreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // Info Section with Logout Button
             Container(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               decoration: BoxDecoration(
@@ -100,16 +151,14 @@ class Profilescreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _buildInfoRow("Septian Enggar"),
+                  _buildInfoRow(userName),
                   _buildSeparator(),
-                  _buildInfoRow("198909012019031010"),
+                  _buildInfoRow(userNidn),
                   _buildSeparator(),
-                  _buildInfoRow("Teknologi Informasi "),
+                  _buildInfoRow(userPhone),
                   _buildSeparator(),
-                  _buildInfoRow("085876345109",
-                      trailing: const Icon(Icons.edit)),
+                  _buildInfoRow(userEmail),
                   _buildSeparator(),
-                  // Logout Button
                   GestureDetector(
                     onTap: () {
                       showModalBottomSheet(
@@ -142,31 +191,40 @@ class Profilescreen extends StatelessWidget {
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor:
                                               const Color(0xFF001C72),
+                                          foregroundColor: Colors.white,
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(8.0),
                                           ),
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 20.0),
                                         ),
-                                        onPressed: () {
-                                          Navigator.of(context)
-                                              .pushReplacementNamed('/login');
+                                        onPressed: () async {
+                                          // Hapus token otentikasi
+                                          SharedPreferences prefs =
+                                              await SharedPreferences
+                                                  .getInstance();
+                                          await prefs.remove(
+                                              'auth_token'); // Menghapus token
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    LoginPage()),
+                                          );
                                         },
                                         child: const Text('YA'),
                                       ),
                                       ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.grey,
+                                          foregroundColor: Colors.white,
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
                                                 BorderRadius.circular(8.0),
                                           ),
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 20.0),
                                         ),
                                         onPressed: () {
-                                          Navigator.of(context).pop();
+                                          Navigator.of(context)
+                                              .pop(); // Menutup modal
                                         },
                                         child: const Text('Tidak'),
                                       ),
@@ -198,52 +256,54 @@ class Profilescreen extends StatelessWidget {
           ],
         ),
       ),
-      // Bottom navbar
-       bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        notchMargin: 8,
-        color: Colors.indigo[900], // Ubah warna bottom bar menjadi biru tua
-        child: Container(
+      // Bottom Navigation Bar
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 5,
+        color: const Color(0xFF191970),
+        child: SizedBox(
           height: 70,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-             IconButton(
-  icon: Icon(Icons.home, color: Colors.white, size: 30), // Warna icon putih dan ukuran lebih besar
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => HomeScreen()), // Sesuaikan dengan nama kelas 'HomePage'
-    );
-  },
-),
-
               IconButton(
-                icon: Icon(Icons.access_time, color: Colors.white, size: 30), // Warna icon putih dan ukuran lebih besar
+                icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  // Arahkan ke halaman Histori
-              Navigator.push(
-  context,
-  MaterialPageRoute(builder: (context) => TaskApprovalPage()), // Sesuaikan dengan nama kelas yang benar
-);
-
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>  HomeScreen()),
+                  );
                 },
               ),
-              SizedBox(width: 50), // Beri ruang lebih untuk tombol +
               IconButton(
-  icon: Icon(Icons.mail, color: Colors.white, size: 30), // Warna icon putih dan ukuran lebih besar
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => NotifikasiPage()), // Sesuaikan dengan nama kelas 'NotificationScreen'
-    );
-  },
-),
-
-              IconButton(
-                icon: Icon(Icons.person, color: Colors.white, size: 30), // Warna icon putih dan ukuran lebih besar
+                icon: const Icon(Icons.access_time,
+                    color: Colors.white, size: 30),
                 onPressed: () {
-                  // Aksi ke halaman profil
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TaskApprovalPage()),
+                  );
+                },
+              ),
+              const SizedBox(width: 50),
+              IconButton(
+                icon: const Icon(Icons.mail, color: Colors.white, size: 30),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const NotifikasiPage()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.person, color: Colors.white, size: 30),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const Profilescreen()),
+                  );
                 },
               ),
             ],
@@ -251,32 +311,31 @@ class Profilescreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: Container(
-        width: 90, // Ukuran lingkaran FAB lebih besar
-        height: 90, // Tinggi lingkaran FAB lebih besar
-        decoration: BoxDecoration(
-          shape: BoxShape.circle, // Bentuk lingkaran penuh
-          color: Colors.blueAccent, // Warna biru lebih cerah
+        width: 90,
+        height: 90,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.blueAccent,
         ),
         child: FloatingActionButton(
-          elevation: 0, // Hapus elevation agar rata dengan lingkaran
-          backgroundColor: Colors.transparent, // Jadikan background transparan agar tidak bertumpuk
+          elevation: 0,
+          backgroundColor: Colors.transparent,
           onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => AddTaskPage()),
             );
           },
-          child: Icon(
-            Icons.add, 
-            size: 50, // Ukuran icon + lebih besar dari icon biasa
-            color: Colors.white, // Warna putih agar kontras
+          child: const Icon(
+            Icons.add,
+            size: 50,
+            color: Colors.white,
           ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
-}
 
   Widget _buildInfoRow(String text, {Widget? trailing}) {
     return Padding(
@@ -299,9 +358,7 @@ class Profilescreen extends StatelessWidget {
     return const Divider(
       color: Colors.grey,
       height: 1,
-      thickness: 0.5,
-      indent: 16,
-      endIndent: 16,
+      thickness: 1,
     );
   }
-
+}
