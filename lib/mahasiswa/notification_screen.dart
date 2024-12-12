@@ -12,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'https://kompen.kufoto.my.id', // Ganti dengan IP server Anda
+      baseUrl: 'https://kompen.kufoto.my.id',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -32,15 +32,33 @@ class ApiService {
     }
   }
 
+
   Future<List> fetchDeclinedNotifications(String token) async {
+    final dio = Dio();
+    final options = Options(
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
     try {
-      final response = await _dio.post(
-        '/api/notif_tolak_apply',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      final response = await dio.post(
+        'https://kompen.kufoto.my.id/api/notif_tolak_apply',
+        options: options,
       );
-      return response.data['declined'] ?? [];
-    } catch (error) {
-      throw Exception('Gagal memuat notifikasi apply ditolak: $error');
+      
+      if (response.statusCode == 200) {
+        // Process and return the declined notifications data
+        var declinedNotifications = response.data['declined'] ?? [];
+        print('Declined Notifications: $declinedNotifications');
+        return declinedNotifications;
+      } else {
+        print('Error: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error: $e');
+      return [];
     }
   }
 
@@ -57,14 +75,30 @@ class ApiService {
   }
 
   Future<List> fetchDeclineNotifications(String token) async {
+    final dio = Dio();
+    final options = Options(
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
     try {
-      final response = await _dio.post(
-        '/api/notif_tolak_tugas',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      final response = await dio.post(
+        'https://kompen.kufoto.my.id/api/notif_tolak_tugas',
+        options: options,
       );
-      return response.data['decline'] ?? [];
-    } catch (error) {
-      throw Exception('Gagal memuat notifikasi tugas ditolak: $error');
+      
+      if (response.statusCode == 200) {
+        var declineNotifications = response.data['decline'] ?? [];
+        print('Decline Notifications: $declineNotifications');
+        return declineNotifications;
+      } else {
+        print('Error: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error: $e');
+      return [];
     }
   }
 }
@@ -81,34 +115,30 @@ class _NotificationScreenState extends State<NotificationScreen> {
   List _acceptNotifications = [];
   List _declineNotifications = [];
   bool _isLoading = true;
-  String? _token;
+
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
 
   @override
   void initState() {
     super.initState();
-    _loadTokenAndFetchNotifications();
-  }
-
-  Future<void> _loadTokenAndFetchNotifications() async {
-    try {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      _token = prefs.getString('auth_token');
-      print('Token ditemukan: $_token');
-      await _fetchNotifications();
-    } catch (error) {
-      print('Gagal memuat notifikasi: $error');
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    _fetchNotifications();
   }
 
   Future<void> _fetchNotifications() async {
     try {
-      final accepted = await apiService.fetchAcceptedNotifications(_token!);
-      final declined = await apiService.fetchDeclinedNotifications(_token!);
-      final accept = await apiService.fetchAcceptNotifications(_token!);
-      final decline = await apiService.fetchDeclineNotifications(_token!);
+      String? authToken = await getAuthToken();
+
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
+      final accepted = await apiService.fetchAcceptedNotifications(authToken);
+      final declined = await apiService.fetchDeclinedNotifications(authToken);
+      final accept = await apiService.fetchAcceptNotifications(authToken);
+      final decline = await apiService.fetchDeclineNotifications(authToken);
       print('Data notifikasi diterima: $accepted');
       print('Data notifikasi ditolak: $declined');
       setState(() {
@@ -221,9 +251,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               );
                             },
                             child: NotificationCard(
-                              name: pemberiTugas, // Menggunakan nama pemberi tugas
+                              name:
+                                  pemberiTugas, // Menggunakan nama pemberi tugas
                               message: "Permintaan tugas $tugasNama ditolak!",
-                              backgroundColor: Colors.white,
+                              backgroundColor: Colors.red[100],
                             ),
                           );
                         }).toList(),
@@ -243,7 +274,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             },
                             child: NotificationCard(
                               name: pemberiTugas,
-                              message: "Tugas $tugasNama diterima oleh $pemberiTugas.",
+                              message:
+                                  "Tugas $tugasNama diterima oleh $pemberiTugas.",
                               backgroundColor: Colors.green[200],
                             ),
                           );
@@ -267,9 +299,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               );
                             },
                             child: NotificationCard(
-                              name: pemberiTugas, 
+                              name: pemberiTugas,
                               message: "Pengumpulan tugas $tugasNama ditolak!",
-                              backgroundColor: Colors.white,
+                              backgroundColor: Colors.red[200],
                             ),
                           );
                         }).toList()
