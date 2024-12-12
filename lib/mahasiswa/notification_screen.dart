@@ -8,8 +8,6 @@ import 'print_letter_screen.dart';
 import 'tasks_screen.dart';
 import 'history_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../about_page.dart';
 
 class ApiService {
   final Dio _dio = Dio(
@@ -132,52 +130,42 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Suka Kompen.',
-          style: GoogleFonts.poppins(
-            textStyle: const TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF191970), // Warna biru tua
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                "Suka Kompen.",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.indigo[900],
+                  fontSize: 24,
+                ),
+              ),
             ),
-          ),
+            IconButton(
+              icon: Icon(Icons.filter_list, color: Colors.grey),
+              onPressed: () {
+                // Tambahkan aksi filter di sini
+              },
+            ),
+          ],
         ),
-        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        toolbarHeight: 90, // Tinggi AppBar
-        elevation: 0, // Menghapus bayangan
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.info_outline, // Icon info
-              color: Color(0xFF191970), // Warna icon
-            ),
-            tooltip: 'Tentang Pengembang', // Tooltip pada icon
-            onPressed: () {
-              // Navigasi ke AboutPage saat ikon ditekan
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AboutPage()),
-              );
-            },
-          ),
-        ],
       ),
       body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         color: Colors.grey[100],
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator())
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     "Notifikasi",
-                    style: GoogleFonts.poppins(
-                      textStyle: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 16),
@@ -193,7 +181,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             onTap: () {
                               String tugasId =
                                   notification['tugas']['tugas_id'].toString();
-                              String applyId =
+                              String applyID =
                                   notification['apply_id'].toString();
 
                               Navigator.push(
@@ -201,8 +189,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 MaterialPageRoute(
                                   builder: (context) => UploadProofScreen(
                                       tugasId: tugasId,
-                                      applyId:
-                                          applyId), // Pass both tugasId and progressId
+                                      applyID:
+                                          applyID), // Pass both tugasId and progressId
                                 ),
                               );
                             },

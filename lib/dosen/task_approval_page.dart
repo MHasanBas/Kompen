@@ -6,14 +6,13 @@ import 'add_task_page.dart';
 import 'notifikasi.dart';
 import 'ProfilePage.dart';
 import 'dashboard.dart';
-import '../about_page.dart';
 
 final Dio dio = Dio();
 
-String url_domain = "https://kompen.kufoto.my.id";
-String url_approval_data = "$url_domain/api/apply_mahasiswa";
-String url_acc_data = "$url_domain/api/acc";
-String url_decline_data = "$url_domain/api/decline";
+String urlDomain = "https://kompen.kufoto.my.id";
+String urlApprovalData = "$urlDomain/api/apply_mahasiswa";
+String urlAccData = "$urlDomain/api/acc";
+String urlDeclineData = "$urlDomain/api/decline";
 
 class TaskApprovalPage extends StatefulWidget {
   @override
@@ -22,6 +21,7 @@ class TaskApprovalPage extends StatefulWidget {
 
 class _TaskApprovalPageState extends State<TaskApprovalPage> {
   List<Map<String, dynamic>> tasks = [];
+  bool isLoading = false;
 
   Future<String?> getAuthToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -35,6 +35,10 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
   }
 
   Future<void> fetchTasks() async {
+    setState(() {
+      isLoading = true;
+    });
+
     try {
       String? authToken = await getAuthToken();
       if (authToken == null) {
@@ -42,11 +46,12 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
       }
 
       final response = await dio.post(
-        url_approval_data,
+        urlApprovalData,
         options: Options(
           headers: {'Authorization': 'Bearer $authToken'},
         ),
       );
+
       if (response.statusCode == 200) {
         setState(() {
           tasks = List<Map<String, dynamic>>.from(response.data);
@@ -56,18 +61,21 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
       }
     } catch (e) {
       print('Error fetching tasks: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   Future<void> updateStatus(int applyId, bool isApproved) async {
     try {
       String? authToken = await getAuthToken();
-
       if (authToken == null) {
         throw Exception('Token tidak ditemukan');
       }
 
-      final String url = isApproved ? url_acc_data : url_decline_data;
+      final String url = isApproved ? urlAccData : urlDeclineData;
 
       final response = await dio.post(
         url,
@@ -98,7 +106,7 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
   }
 
   @override
-    Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -114,32 +122,15 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
         ),
         toolbarHeight: 89.0,
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.info_outline, // Icon info
-              color: Color(0xFF191970), // Warna icon
-            ),
-            tooltip: 'Tentang Pengembang', // Tooltip pada icon
-            onPressed: () {
-              // Navigasi ke AboutPage saat ikon ditekan
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AboutPage()),
-              );
-            },
-          ),
-        ],
       ),
       backgroundColor: const Color(0xFFF9F9F9),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Tambahkan teks Approval Page
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              'Approval Page',
+              'Apply Page',
               style: GoogleFonts.poppins(
                 textStyle: const TextStyle(
                   fontSize: 18.0,
@@ -149,63 +140,71 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
               ),
             ),
           ),
-          // Konten utama, seperti daftar tugas atau pesan kosong
           Expanded(
-            child: tasks.isEmpty
+            child: isLoading
                 ? Center(
-                    child: Text(
-                      'Belum ada yang apply',
-                      style: GoogleFonts.poppins(
-                        textStyle: const TextStyle(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
+                    child: CircularProgressIndicator(),
                   )
-                : ListView.builder(
-                    itemCount: tasks.length,
-                    itemBuilder: (context, index) {
-                      final task = tasks[index];
-                      final tugas = task['tugas'];
-                      final apply = task['apply'][0];
-
-                      return Card(
-                        margin: const EdgeInsets.all(10),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(10),
-                          leading: const Icon(Icons.assignment, size: 50),
-                          title: Text(
-                            tugas != null && tugas['tugas_nama'] != null
-                                ? tugas['tugas_nama']
-                                : 'Nama Tugas Tidak Ditemukan',
-                          ),
-                          subtitle: Text(
-                            '${tugas != null && tugas['nama'] != null ? tugas['nama'] : 'Unknown user'} - '
-                            'Status: ${apply != null && apply['apply_status'] != null ? apply['apply_status'] : 'Pending'}',
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.close, color: Colors.red),
-                                onPressed: () {
-                                  updateStatus(apply['apply_id'], false); // Decline task
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.check, color: Colors.green),
-                                onPressed: () {
-                                  updateStatus(apply['apply_id'], true); // Approve task
-                                },
-                              ),
-                            ],
+                : tasks.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Belum ada yang apply',
+                          style: GoogleFonts.poppins(
+                            textStyle: const TextStyle(
+                              fontSize: 18.0,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black54,
+                            ),
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      )
+                    : ListView.builder(
+                        itemCount: tasks.length,
+                        itemBuilder: (context, index) {
+                          final task = tasks[index];
+                          final tugas = task['tugas'];
+                          final apply =
+                              (task['apply'] as List).isNotEmpty ? task['apply'][0] : null;
+
+                          return Card(
+                            margin: const EdgeInsets.all(10),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(10),
+                              leading: const Icon(Icons.assignment, size: 50),
+                              title: Text(
+                                tugas?['tugas_nama'] ?? 'Nama Tugas Tidak Ditemukan',
+                              ),
+                              subtitle: Text(
+                                '${tugas?['nama'] ?? 'Unknown user'} - '
+                                'Status: ${apply?['apply_status'] ?? 'Pending'}',
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon:
+                                        const Icon(Icons.close, color: Colors.red),
+                                    onPressed: () {
+                                      if (apply != null) {
+                                        updateStatus(apply['apply_id'], false);
+                                      }
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.check,
+                                        color: Colors.green),
+                                    onPressed: () {
+                                      if (apply != null) {
+                                        updateStatus(apply['apply_id'], true);
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),

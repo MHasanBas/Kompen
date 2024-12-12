@@ -5,9 +5,9 @@ import 'package:intl/intl.dart'; // Import intl for date formatting
 
 class UploadProofScreen extends StatefulWidget {
   final String tugasId;
-  final String applyId; // Assuming this is the progressId you need to pass
+  final String applyID; // Assuming this is the applyId you need to pass
 
-  UploadProofScreen({required this.tugasId, required this.applyId});
+  UploadProofScreen({required this.tugasId, required this.applyID});
 
   @override
   _UploadProofScreenState createState() => _UploadProofScreenState();
@@ -78,21 +78,22 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
 
       FormData formData = FormData.fromMap({
         'file_mahasiswa': MultipartFile.fromBytes(fileBytes, filename: fileName),
-        'apply_id': widget.applyId, // Ensure progressId is valid
+        'apply_id': widget.applyID, // Ensure applyId is valid
       });
 
       Dio dio = Dio();
       try {
         final response = await dio.post(
-          'https://kompen.kufoto.my.id/api/upload', // Replace with your actual API URL
+          'http://192.168.31.139:8000/api/upload', // Replace with your actual API URL
           data: formData,
         );
 
         if (response.statusCode == 200) {
-          print('File uploaded successfully');
-        } else {
-          print('Failed to upload file: ${response.statusCode}');
-          print('Response body: ${response.data}'); // Log the response body for debugging
+          var responseData = response.data;
+          String message = responseData['message'] ?? 'Berhasil Mengirim Pekerjaan';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
         }
       } catch (e) {
         print('Error during file upload: $e');
@@ -104,18 +105,28 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
   void sendTaskToApi() async {
     Dio dio = Dio();
     try {
+      print('Sending apply_id: ${widget.applyID}');
+      
       final response = await dio.post(
-        'https://kompen.kufoto.my.id/api/kirim', // Your API URL for sending the task
+        'http://192.168.31.139:8000/api/kirim', // Correct API URL
         data: {
-          'progress_id': widget.applyId, // Send the progress_id as part of the request body
+          'apply_id': widget.applyID, // Adjust to match the parameter in your controller
         },
       );
 
       if (response.statusCode == 200) {
+        // Handle success
+        print('Response data: ${response.data}');
+        var responseData = response.data;
+        String message = responseData['message'] ?? 'Berhasil Mengirim Pekerjaan';
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Berhasil Mengirim Pekerjaan')),
+          SnackBar(content: Text(message)),
         );
       } else {
+        // Handle failure
+        print('Failed to send task: ${response.statusCode}');
+        print('Response body: ${response.data}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal Mengirim Pekerjaan')),
         );

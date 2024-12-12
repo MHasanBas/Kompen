@@ -7,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'Cek_Tugas.dart';
 import 'add_task_page.dart';
 import 'package:dio/dio.dart';
-import '../about_page.dart';
 
 class NotifikasiPage extends StatefulWidget {
   const NotifikasiPage({super.key});
@@ -39,7 +38,8 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
       );
       if (response.statusCode == 200) {
         setState(() {
-          tugasList = response.data;
+          // Assuming response.data is a Map where the key is the task ID
+          tugasList = response.data.values.toList();  // Convert the response into a list
           isLoading = false;
         });
       } else {
@@ -63,7 +63,7 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
   }
 
   @override
-   Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -79,22 +79,6 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
         ),
         toolbarHeight: 89.0,
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.info_outline, // Icon info
-              color: Color(0xFF191970), // Warna icon
-            ),
-            tooltip: 'Tentang Pengembang', // Tooltip pada icon
-            onPressed: () {
-              // Navigasi ke AboutPage saat ikon ditekan
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AboutPage()),
-              );
-            },
-          ),
-        ],
       ),
       backgroundColor: const Color(0xFFF9F9F9),
       body: Padding(
@@ -102,162 +86,144 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Judul Cek Tugas
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Cek Tugas',
-                  style: GoogleFonts.poppins(
-                    textStyle: const TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black54,
-                    ),
-                  ),
+            Text(
+              'Cek Tugas',
+              style: GoogleFonts.poppins(
+                textStyle: const TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
                 ),
-                // Tambahkan Icon "Refresh" di samping judul
-                IconButton(
-                  icon: const Icon(
-                    Icons.refresh,
-                    color: Colors.blueAccent,
-                  ),
-                  tooltip: 'Refresh Halaman',
-                  onPressed: () {
-                    // Aksi refresh (opsional)
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Halaman di-refresh!'),
-                      ),
-                    );
-                  },
-                ),
-              ],
+              ),
             ),
             isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : tugasList.isEmpty
-                ? Expanded(
-                    child: Center(
-                      child: Text(
-                        'Belum ada yang mengumpulkan tugas',
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 16.0,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ),
-                    ),
-                  )
-                : Expanded(
-                    child: ListView.builder(
-                      itemCount: tugasList.length,
-                      itemBuilder: (context, index) {
-                        var tugasItem = tugasList[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10.0),
-                          child: Card(
-                            elevation: 3,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 60,
-                                    height: 60,
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue[100],
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Image.asset(
-                                      '/images/task_image.png',
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          tugasItem['tugas']['tugas_nama'] ??
-                                              'Nama Tugas Tidak Ditemukan',
-                                          style: GoogleFonts.poppins(
-                                            textStyle: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          '${tugasItem['approval'][0]['dosen_name'] ?? 'Unknown'}\n${tugasItem['tugas']['tugas_deskripsi'] ?? 'No Description'}',
-                                          style: GoogleFonts.poppins(
-                                            textStyle: const TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black54,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.orange,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      var approvalId =
-                                          tugasItem['approval'][0]['approval_id'];
-                                      var progressId =
-                                          tugasItem['approval'][0]['progress_id'];
-                                      var tugasId = tugasItem['tugas']['tugas_id'];
-
-                                      print(
-                                          'Fetching data for tugasId: $tugasId and approvalId: $approvalId and progressId: $progressId');
-
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => CekTugasPage(
-                                              tugasId: tugasId,
-                                              approvalId: approvalId,
-                                              progressId: progressId),
-                                        ),
-                                      );
-                                    },
-                                    child: Text(
-                                      'Cek Tugas',
-                                      style: GoogleFonts.poppins(
-                                        textStyle: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                ? const Center(child: CircularProgressIndicator())
+                : tugasList.isEmpty
+                    ? Expanded(
+                        child: Center(
+                          child: Text(
+                            'Belum ada yang mengumpulkan tugas',
+                            style: GoogleFonts.poppins(
+                              textStyle: const TextStyle(
+                                fontSize: 16.0,
+                                color: Colors.black54,
                               ),
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  ),
+                        ),
+                      )
+                    : Expanded(
+                        child: ListView.builder(
+                          itemCount: tugasList.length,
+                          itemBuilder: (context, index) {
+                            var tugasItem = tugasList[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10.0),
+                              child: Card(
+                                elevation: 3,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 60,
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue[100],
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: Image.asset(
+                                          '/images/task_image.png',
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              tugasItem['tugas']
+                                                      ['tugas_nama'] ?? 'Nama Tugas Tidak Ditemukan',
+                                              style: GoogleFonts.poppins(
+                                                textStyle: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              '${tugasItem['tugas']['tugas_deskripsi'] ?? 'No Description'}',
+                                              style: GoogleFonts.poppins(
+                                                textStyle: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.black54,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.orange,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 8,
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          var approvalId = tugasItem['approval']
+                                              [0]['approval_id'];
+                                          var progressId = tugasItem['approval']
+                                              [0]['progress_id'];
+                                          var tugasId =
+                                              tugasItem['tugas']['tugas_id'];
 
+                                          print(
+                                              'Fetching data for tugasId: $tugasId and approvalId: $approvalId and progressId: $progressId');
+
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  CekTugasPage(
+                                                      tugasId: tugasId,
+                                                      approvalId: approvalId,
+                                                      progressId: progressId),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          'Cek Tugas',
+                                          style: GoogleFonts.poppins(
+                                            textStyle: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
           ],
         ),
       ),
@@ -273,15 +239,13 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
               IconButton(
                 icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                 Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => HomeScreen()));
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => HomeScreen()));
                 },
               ),
               IconButton(
-                icon:
-                    const Icon(Icons.access_time, color: Colors.white, size: 30),
+                icon: const Icon(Icons.access_time,
+                    color: Colors.white, size: 30),
                 onPressed: () {
                   Navigator.push(
                       context,
@@ -295,17 +259,18 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const NotifikasiPage()),
+                    MaterialPageRoute(
+                        builder: (context) => const NotifikasiPage()),
                   );
                 },
               ),
               IconButton(
-                icon:
-                    const Icon(Icons.person, color: Colors.white, size: 30),
+                icon: const Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const Profilescreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const Profilescreen()),
                   );
                 },
               ),
