@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart'; // For file picking
 import 'package:intl/intl.dart'; // Import intl for date formatting
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class UploadProofScreen extends StatefulWidget {
   final String tugasId;
@@ -19,15 +21,15 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
   @override
   void initState() {
     super.initState();
-    taskDetails = fetchTaskDetails(widget.tugasId); // Fetch task details based on tugasId
+    taskDetails = fetchTaskDetails(widget.tugasId);
   }
 
   String formatDate(String dateString) {
     try {
-      DateTime date = DateTime.parse(dateString);  // Parsing the string into DateTime object
-      return DateFormat('dd MMM yyyy').format(date);  // Format the date to your desired format
+      DateTime date = DateTime.parse(dateString);
+      return DateFormat('dd MMM yyyy').format(date);
     } catch (e) {
-      return dateString;  // Return the original string if parsing fails
+      return dateString;
     }
   }
 
@@ -36,8 +38,8 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
 
     try {
       final response = await dio.post(
-        'https://kompen.kufoto.my.id/api/show_tugas', // Replace with the correct API URL
-        data: {'tugas_id': tugasId}, // Send tugasId in the request body
+        'https://kompen.kufoto.my.id/api/show_tugas',
+        data: {'tugas_id': tugasId},
       );
 
       if (response.statusCode == 200) {
@@ -50,7 +52,89 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
     }
   }
 
-  // Function to upload file
+  void downloadFileFromApi(String tugasId) async {
+    Dio dio = Dio();
+
+    try {
+      final response = await dio.post(
+        'https://kompen.kufoto.my.id/api/download_tugas', // Adjust URL as needed
+        data: {'tugas_id': tugasId},
+      );
+
+      if (response.statusCode == 200) {
+        String fileUrl = response.data['url'];
+
+        if (fileUrl.isNotEmpty) {
+          // Ensure that the fileUrl is a full URL, prepend the base URL if it's relative
+          if (!fileUrl.startsWith('http://') && !fileUrl.startsWith('https://')) {
+            fileUrl = 'https://kompen.kufoto.my.id$fileUrl';
+          }
+
+          print('File URL: $fileUrl');
+          downloadFileFromUrl(fileUrl);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('URL file tidak ditemukan')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menghubungi API untuk file tugas')),
+        );
+      }
+    } catch (e) {
+      print('Error during API request: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: Gagal mengambil file')),
+      );
+    }
+  }
+
+  void downloadFileFromUrl(String fileUrl) async {
+    Dio dio = Dio();
+
+    try {
+      if (!fileUrl.startsWith('http://') && !fileUrl.startsWith('https://')) {
+        fileUrl = 'https://kompen.kufoto.my.id/storage/posts/tugas$fileUrl';  
+      }
+
+      print('Attempting to download file from URL: $fileUrl');
+
+      String fileName = fileUrl.split('/').last;
+
+      final directory = await getApplicationDocumentsDirectory();
+      String savePath = '${directory.path}/$fileName';
+
+      final response = await dio.download(
+        fileUrl,
+        savePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            print('Downloading: ${(received / total * 100).toStringAsFixed(0)}%');
+          }
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print('File downloaded to: $savePath');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('File berhasil diunduh! Lokasi: $savePath')),
+        );
+      } else {
+        print('Failed to download file, status code: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengunduh file')),
+        );
+      }
+    } catch (e) {
+      print('Error during file download: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: Gagal mengunduh file')),
+      );
+    }
+  }
+
   void uploadFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
 
@@ -58,18 +142,15 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
       List<int> fileBytes = result.files.single.bytes ?? [];
       String fileName = result.files.single.name;
 
-      // Log the file type and size for debugging
       print('Selected file: $fileName');
       print('File size: ${result.files.single.size} bytes');
       print('File type: ${result.files.single.extension}');
 
-      // Check file size
       if (result.files.single.size > 5120000) {
         print('File is too large, must be less than 5MB');
         return;
       }
 
-      // Check file type
       List<String> allowedExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'];
       if (!allowedExtensions.contains(result.files.single.extension)) {
         print('Invalid file type');
@@ -84,7 +165,7 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
       Dio dio = Dio();
       try {
         final response = await dio.post(
-          'http://192.168.31.139:8000/api/upload', // Replace with your actual API URL
+          'https://kompen.kufoto.my.id/api/upload', // Replace with your actual API URL
           data: formData,
         );
 
@@ -108,7 +189,7 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
       print('Sending apply_id: ${widget.applyID}');
       
       final response = await dio.post(
-        'http://192.168.31.139:8000/api/kirim', // Correct API URL
+        'https://kompen.kufoto.my.id/api/kirim', // Correct API URL
         data: {
           'apply_id': widget.applyID, // Adjust to match the parameter in your controller
         },
@@ -228,65 +309,40 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
                           title: Text(task['file_tugas'] ?? 'Tidak Ada File Tugas'),
                           trailing: Icon(Icons.download),
                           onTap: () {
-                            // Add file download logic if needed
+                            String? fileUrl = task['file_tugas'];
+                            if (fileUrl != null && fileUrl.isNotEmpty) {
+                              downloadFileFromUrl(fileUrl); // Trigger download from the file URL
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Tidak ada file tugas untuk diunduh')),
+                              );
+                            }
                           },
                         ),
+                        SizedBox(height: 16),
                         Divider(),
+                        ListTile(
+                          leading: Icon(Icons.calendar_today),
+                          title: Text('Tenggat: ${formatDate(tugasTenggat)}'),
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.access_time),
+                          title: Text('Batas Pengumpulan: $tugasAlpha'),
+                        ),
+                        SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: uploadFile,
+                          child: Text("Upload Bukti"),
+                        ),
                         SizedBox(height: 8),
-                        Text(
-                          "Suka Kompen.",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ElevatedButton(
+                          onPressed: sendTaskToApi,
+                          child: Text("Kirim Tugas"),
                         ),
-                        SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          onPressed: uploadFile, // Call the uploadFile function
-                          icon: Icon(Icons.upload_file),
-                          label: Text("Upload File"),
-                        ),
-                        SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.access_time, color: Colors.grey),
-                                SizedBox(width: 4),
-                                Text(formatDate(tugasTenggat)), // Format tanggal
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                Icon(Icons.arrow_downward, color: Colors.red),
-                                SizedBox(width: 4),
-                                Text(tugasAlpha, style: TextStyle(color: Colors.red)),
-                              ],
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 16),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green, // Button color
-                    foregroundColor: Colors.white, // Text color
-                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: () {
-                    sendTaskToApi(); // Call the sendTaskToApi function
-                  },
-                  child: Text(
-                    "Kirim Pekerjaan",
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
-                SizedBox(height: 24),
               ],
             ),
           );

@@ -46,6 +46,8 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSDocumentsFolderUsageDescription</key>
-	<string>Aplikasi ini membutuhkan akses ke dokumen untuk menyimpan file unduhan</string>
+		<string>Aplikasi ini membutuhkan akses ke dokumen untuk menyimpan file unduhan</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+		<string>Your message to the user about why you need access to the photo library</string>
 </dict>
 </plist>
