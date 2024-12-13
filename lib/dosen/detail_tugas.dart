@@ -56,6 +56,59 @@ class _DetailTugasPage extends State<DetailTugasPage> {
   }
 
   void deleteData(String tugasId) async {
+  // Show confirmation dialog before deleting
+  bool? confirmDelete = await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.white, // Match the app's background color
+        title: Text(
+          'Konfirmasi Hapus Tugas',
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.blueGrey[900], // Consistent text color
+          ),
+        ),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus tugas ini?',
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            color: Colors.blueGrey[700], // Subtle text color for the message
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: Text(
+              'Batal',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: const Color(0xFF6200EE), // Consistent button color
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop(false); // User cancels the action
+            },
+          ),
+          TextButton(
+            child: Text(
+              'Hapus',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.red, // Red for a warning action
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop(true); // User confirms deletion
+            },
+          ),
+        ],
+      );
+    },
+  );
+
+  if (confirmDelete == true) {
     try {
       Response response = await dio.post(
         url_delete_data,
@@ -64,20 +117,23 @@ class _DetailTugasPage extends State<DetailTugasPage> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Tugas berhasil dihapus')),
+          const SnackBar(content: Text('Tugas berhasil dihapus')),
         );
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menghapus tugas')),
+          const SnackBar(content: Text('Gagal menghapus tugas')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Terjadi kesalahan saat menghapus tugas')),
+        const SnackBar(content: Text('Terjadi kesalahan saat menghapus tugas')),
       );
     }
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {

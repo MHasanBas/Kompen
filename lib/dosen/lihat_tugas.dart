@@ -232,10 +232,10 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
+     bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 5,
-        color: Colors.indigo[900],
+        color: const Color(0xFF191970),
         child: SizedBox(
           height: 70,
           child: Row(
@@ -244,37 +244,69 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
               IconButton(
                 icon: const Icon(Icons.home, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                  );
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.access_time, color: Colors.white, size: 30),
+                icon: const Icon(Icons.access_time,
+                    color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => TaskApprovalPage()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TaskApprovalPage()),
+                  );
                 },
               ),
               const SizedBox(width: 50),
               IconButton(
                 icon: const Icon(Icons.mail, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const NotifikasiPage()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const NotifikasiPage()),
+                  );
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.person, color: Colors.white, size: 30),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const Profilescreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const Profilescreen()),
+                  );
                 },
               ),
             ],
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => AddTaskPage()));
-        },
-        child: const Icon(Icons.add, size: 40),
+      floatingActionButton: Container(
+        width: 90,
+        height: 90,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.blueAccent,
+        ),
+        child: FloatingActionButton(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddTaskPage()),
+            );
+          },
+          child: const Icon(
+            Icons.add,
+            size: 50,
+            color: Colors.white,
+          ),
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );

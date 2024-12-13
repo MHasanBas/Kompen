@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'Cek_Tugas.dart';
 import 'add_task_page.dart';
 import 'package:dio/dio.dart';
+import '../about_page.dart';
 
 class NotifikasiPage extends StatefulWidget {
   const NotifikasiPage({super.key});
@@ -71,39 +72,58 @@ class _NotifikasiPageState extends State<NotifikasiPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Text(
-          'Suka Kompen.',
-          style: GoogleFonts.poppins(
-            textStyle: const TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF191970),
-            ),
+ Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      backgroundColor: Colors.white,
+      title: Text(
+        'Suka Kompen.',
+        style: GoogleFonts.poppins(
+          textStyle: const TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF191970),
           ),
         ),
-        toolbarHeight: 89.0,
-        automaticallyImplyLeading: false,
       ),
-      backgroundColor: const Color(0xFFF9F9F9),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Cek Tugas',
-              style: GoogleFonts.poppins(
-                textStyle: const TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black54,
-                ),
+      toolbarHeight: 89.0,
+      automaticallyImplyLeading: false,
+      actions: [
+        IconButton(
+          icon: Icon(
+            Icons.info_outline, // Info icon for developer info
+            color: Color(0xFF191970), // Dark blue icon color
+            size: 30, // Adjust icon size for better visibility
+          ),
+          onPressed: () {
+            // Navigate to the About Page when the icon is pressed
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AboutPage()),
+            );
+          },
+          tooltip: 'Info Pengembang', // Tooltip text on hover
+        ),
+      ],
+    ),
+    backgroundColor: const Color(0xFFF9F9F9), // Background color for the body
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Cek Tugas',
+            style: GoogleFonts.poppins(
+              textStyle: const TextStyle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
               ),
             ),
+          ),
+          // Additional content goes here
+        
             isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : tugasList.isEmpty

@@ -7,6 +7,7 @@ import 'dashboard.dart';
 import 'task_approval_page.dart';
 import 'notifikasi.dart';
 import 'package:kompen/login_page.dart';
+import '../about_page.dart';
 
 class Profilescreen extends StatefulWidget {
   const Profilescreen({super.key});
@@ -83,42 +84,61 @@ class _ProfilescreenState extends State<Profilescreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Text(
-          'Suka Kompen.',
-          style: GoogleFonts.poppins(
-            textStyle: const TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF191970),
-            ),
+ Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      backgroundColor: Colors.white,
+      title: Text(
+        'Suka Kompen.',
+        style: GoogleFonts.poppins(
+          textStyle: const TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF191970),
           ),
         ),
-        toolbarHeight: 89.0,
-        automaticallyImplyLeading: false,
       ),
-      backgroundColor: const Color(0xFFF9F9F9),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: const Color(0xFF001C72),
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-              child: Column(
-                children: [
+      toolbarHeight: 89.0,
+      automaticallyImplyLeading: false,
+      actions: [
+        IconButton(
+          icon: Icon(
+            Icons.info_outline, // Info icon for developer info
+            color: Color(0xFF191970), // Dark blue icon color
+            size: 30, // Adjust icon size for better visibility
+          ),
+          onPressed: () {
+            // Navigate to the About Page when the icon is pressed
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AboutPage()),
+            );
+          },
+          tooltip: 'Info Pengembang', // Tooltip text on hover
+        ),
+      ],
+    ),
+    backgroundColor: const Color(0xFFF9F9F9), // Background color for the body
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: const Color(0xFF001C72),
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+            child: Column(
+              children: [
                 CircleAvatar(
-  radius: 60.0, // Mengurangi ukuran menjadi lebih kecil
-  backgroundColor: Colors.white,
-  backgroundImage: NetworkImage(userImageUrl),
-),
+                  radius: 60.0, // Adjusted to a smaller size
+                  backgroundColor: Colors.white,
+                  backgroundImage: NetworkImage(userImageUrl), // Replace with user image URL
+                ),
+                
+              
 
                   const SizedBox(height: 16.0),
                   Text(

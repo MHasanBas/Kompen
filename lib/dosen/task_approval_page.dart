@@ -6,6 +6,7 @@ import 'add_task_page.dart';
 import 'dashboard.dart';
 import 'notifikasi.dart';
 import 'ProfilePage.dart';
+import '../about_page.dart';
 
 final Dio dio = Dio();
 
@@ -120,40 +121,60 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Text(
-          'Suka Kompen.',
-          style: GoogleFonts.poppins(
-            textStyle: const TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF191970),
-            ),
+ Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      backgroundColor: Colors.white,
+      title: Text(
+        'Suka Kompen.',
+        style: GoogleFonts.poppins(
+          textStyle: const TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF191970),
           ),
         ),
-        toolbarHeight: 89.0,
-        automaticallyImplyLeading: false,
       ),
-      backgroundColor: const Color(0xFFF9F9F9),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              'Apply Page',
-              style: GoogleFonts.poppins(
-                textStyle: const TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black54,
-                ),
+      toolbarHeight: 89.0,
+      automaticallyImplyLeading: false,
+      actions: [
+        IconButton(
+          icon: Icon(
+            Icons.info_outline, // Info icon for developer info
+            color: Color(0xFF191970), // Dark blue icon color
+            size: 30, // Adjust icon size for better visibility
+          ),
+          onPressed: () {
+            // Navigate to the About Page when the icon is pressed
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AboutPage()),
+            );
+          },
+          tooltip: 'Info Pengembang', // Tooltip text on hover
+        ),
+      ],
+    ),
+    backgroundColor: const Color(0xFFF9F9F9), // Background color for the body
+    body: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Apply Page',
+            style: GoogleFonts.poppins(
+              textStyle: const TextStyle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
               ),
             ),
           ),
+        ),
+        // Add more widgets here as needed
+      
+  
           Expanded(
             child: isLoading
                 ? Center(
@@ -307,3 +328,4 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
     );
   }
 }
+
