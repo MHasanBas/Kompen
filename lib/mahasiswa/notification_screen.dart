@@ -32,7 +32,6 @@ class ApiService {
     }
   }
 
-
   Future<List> fetchDeclinedNotifications(String token) async {
     final dio = Dio();
     final options = Options(
@@ -48,7 +47,6 @@ class ApiService {
       );
       
       if (response.statusCode == 200) {
-        // Process and return the declined notifications data
         var declinedNotifications = response.data['declined'] ?? [];
         print('Declined Notifications: $declinedNotifications');
         return declinedNotifications;
@@ -110,11 +108,27 @@ class NotificationScreen extends StatefulWidget {
 
 class _NotificationScreenState extends State<NotificationScreen> {
   final ApiService apiService = ApiService();
-  List _acceptedNotifications = [];
-  List _declinedNotifications = [];
-  List _acceptNotifications = [];
-  List _declineNotifications = [];
+  List _originalAcceptedNotifications = [];
+  List _originalDeclinedNotifications = [];
+  List _originalAcceptNotifications = [];
+  List _originalDeclineNotifications = [];
+  
+  List _filteredAcceptedNotifications = [];
+  List _filteredDeclinedNotifications = [];
+  List _filteredAcceptNotifications = [];
+  List _filteredDeclineNotifications = [];
+  
   bool _isLoading = true;
+  
+  // Filter options
+  List<String> _filterOptions = [
+    'Semua Notifikasi',
+    'Permintaan Diterima',
+    'Permintaan Ditolak',
+    'Tugas Diterima',
+    'Tugas Ditolak'
+  ];
+  String _selectedFilter = 'Semua Notifikasi';
 
   Future<String?> getAuthToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -139,15 +153,22 @@ class _NotificationScreenState extends State<NotificationScreen> {
       final declined = await apiService.fetchDeclinedNotifications(authToken);
       final accept = await apiService.fetchAcceptNotifications(authToken);
       final decline = await apiService.fetchDeclineNotifications(authToken);
-      print('Data notifikasi diterima: $accepted');
-      print('Data notifikasi ditolak: $declined');
+      
       setState(() {
-        _acceptedNotifications = accepted;
-        _declinedNotifications = declined;
-        _acceptNotifications = accept;
-        _declineNotifications = decline;
+        _originalAcceptedNotifications = accepted;
+        _originalDeclinedNotifications = declined;
+        _originalAcceptNotifications = accept;
+        _originalDeclineNotifications = decline;
+        
+        _filteredAcceptedNotifications = accepted;
+        _filteredDeclinedNotifications = declined;
+        _filteredAcceptNotifications = accept;
+        _filteredDeclineNotifications = decline;
+        
         _isLoading = false;
       });
+      
+      _applyFilter(_selectedFilter);
     } catch (error) {
       print('Gagal memuat notifikasi: $error');
       setState(() {
@@ -156,10 +177,79 @@ class _NotificationScreenState extends State<NotificationScreen> {
     }
   }
 
+  void _applyFilter(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+      
+      switch (filter) {
+        case 'Semua Notifikasi':
+          _filteredAcceptedNotifications = _originalAcceptedNotifications;
+          _filteredDeclinedNotifications = _originalDeclinedNotifications;
+          _filteredAcceptNotifications = _originalAcceptNotifications;
+          _filteredDeclineNotifications = _originalDeclineNotifications;
+          break;
+        case 'Permintaan Diterima':
+          _filteredAcceptedNotifications = _originalAcceptedNotifications;
+          _filteredDeclinedNotifications = [];
+          _filteredAcceptNotifications = [];
+          _filteredDeclineNotifications = [];
+          break;
+        case 'Permintaan Ditolak':
+          _filteredAcceptedNotifications = [];
+          _filteredDeclinedNotifications = _originalDeclinedNotifications;
+          _filteredAcceptNotifications = [];
+          _filteredDeclineNotifications = [];
+          break;
+        case 'Tugas Diterima':
+          _filteredAcceptedNotifications = [];
+          _filteredDeclinedNotifications = [];
+          _filteredAcceptNotifications = _originalAcceptNotifications;
+          _filteredDeclineNotifications = [];
+          break;
+        case 'Tugas Ditolak':
+          _filteredAcceptedNotifications = [];
+          _filteredDeclinedNotifications = [];
+          _filteredAcceptNotifications = [];
+          _filteredDeclineNotifications = _originalDeclineNotifications;
+          break;
+      }
+    });
+  }
+
+  void _showFilterBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: _filterOptions.map((filter) {
+              return ListTile(
+                title: Text(filter),
+                trailing: _selectedFilter == filter 
+                  ? Icon(Icons.check, color: Colors.green) 
+                  : null,
+                onTap: () {
+                  _applyFilter(filter);
+                  Navigator.pop(context);
+                },
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
         title: Row(
@@ -168,7 +258,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               child: Text(
                 "Suka Kompen.",
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w900,
                   color: Colors.indigo[900],
                   fontSize: 24,
                 ),
@@ -176,9 +266,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ),
             IconButton(
               icon: Icon(Icons.filter_list, color: Colors.grey),
-              onPressed: () {
-                // Tambahkan aksi filter di sini
-              },
+              onPressed: _showFilterBottomSheet,
             ),
           ],
         ),
@@ -191,120 +279,30 @@ class _NotificationScreenState extends State<NotificationScreen> {
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Notifikasi",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Notifikasi",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        _selectedFilter,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 16),
                   Expanded(
                     child: ListView(
                       children: [
-                        ..._acceptedNotifications.map((notification) {
-                          String tugasNama =
-                              _getTugasNama(notification['tugas']);
-                          String pemberiTugas = _getPemberiTugas(
-                              notification['tugas']['pemberi_tugas']);
-                          return GestureDetector(
-                            onTap: () {
-                              String tugasId =
-                                  notification['tugas']['tugas_id'].toString();
-                              String applyID =
-                                  notification['apply_id'].toString();
-
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => UploadProofScreen(
-                                      tugasId: tugasId,
-                                      applyID:
-                                          applyID), // Pass both tugasId and progressId
-                                ),
-                              );
-                            },
-                            child: NotificationCard(
-                              name: pemberiTugas,
-                              message: "Permintaan tugas $tugasNama diterima.",
-                              backgroundColor: Colors.white,
-                            ),
-                          );
-                        }).toList(),
-                        ..._declinedNotifications.map((notification) {
-                          String tugasNama =
-                              _getTugasNama(notification['tugas']);
-                          String pemberiTugas = _getPemberiTugas(
-                              notification['tugas']['pemberi_tugas']);
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      NotificationDetailScreen(
-                                    title:
-                                        "Permintaan tugas $tugasNama ditolak",
-                                    message: "Mohon cari pekerjaan lain",
-                                  ),
-                                ),
-                              );
-                            },
-                            child: NotificationCard(
-                              name:
-                                  pemberiTugas, // Menggunakan nama pemberi tugas
-                              message: "Permintaan tugas $tugasNama ditolak!",
-                              backgroundColor: Colors.red[100],
-                            ),
-                          );
-                        }).toList(),
-                        ..._acceptNotifications.map((notification) {
-                          String tugasNama =
-                              _getTugasNama(notification['tugas']);
-                          String pemberiTugas = _getPemberiTugas(
-                              notification['tugas']['pemberi_tugas']);
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => PrintLetterScreen(),
-                                ),
-                              );
-                            },
-                            child: NotificationCard(
-                              name: pemberiTugas,
-                              message:
-                                  "Tugas $tugasNama diterima oleh $pemberiTugas.",
-                              backgroundColor: Colors.green[200],
-                            ),
-                          );
-                        }).toList(),
-                        ..._declineNotifications.map((notification) {
-                          String tugasNama =
-                              _getTugasNama(notification['tugas']);
-                          String pemberiTugas = _getPemberiTugas(
-                              notification['tugas']['pemberi_tugas']);
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      NotificationDetailScreen(
-                                    title: "Tugas $tugasNama ditolak",
-                                    message: "Tugas kurang sesuai",
-                                  ),
-                                ),
-                              );
-                            },
-                            child: NotificationCard(
-                              name: pemberiTugas,
-                              message: "Pengumpulan tugas $tugasNama ditolak!",
-                              backgroundColor: Colors.red[200],
-                            ),
-                          );
-                        }).toList()
+                        ..._buildNotificationWidgets(),
                       ],
                     ),
                   ),
@@ -315,6 +313,118 @@ class _NotificationScreenState extends State<NotificationScreen> {
       floatingActionButton: _buildFloatingActionButton(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
+  }
+
+  List<Widget> _buildNotificationWidgets() {
+    List<Widget> notifications = [];
+
+    notifications.addAll(_filteredAcceptedNotifications.map((notification) {
+      String tugasNama = _getTugasNama(notification['tugas']);
+      String pemberiTugas = _getPemberiTugas(notification['tugas']['pemberi_tugas']);
+      return GestureDetector(
+        onTap: () {
+          String tugasId = notification['tugas']['tugas_id'].toString();
+          String applyID = notification['apply_id'].toString();
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UploadProofScreen(
+                tugasId: tugasId,
+                applyID: applyID,
+              ),
+            ),
+          );
+        },
+        child: NotificationCard(
+          name: pemberiTugas,
+          message: "Permintaan tugas $tugasNama diterima.",
+          backgroundColor: Colors.white,
+        ),
+      );
+    }).toList());
+
+    notifications.addAll(_filteredDeclinedNotifications.map((notification) {
+      String tugasNama = _getTugasNama(notification['tugas']);
+      String pemberiTugas = _getPemberiTugas(notification['tugas']['pemberi_tugas']);
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => NotificationDetailScreen(
+                title: "Permintaan tugas $tugasNama ditolak",
+                message: "Mohon cari pekerjaan lain",
+              ),
+            ),
+          );
+        },
+        child: NotificationCard(
+          name: pemberiTugas,
+          message: "Permintaan tugas $tugasNama ditolak!",
+          backgroundColor: Colors.red[100],
+        ),
+      );
+    }).toList());
+
+    notifications.addAll(_filteredAcceptNotifications.map((notification) {
+      String tugasNama = _getTugasNama(notification['tugas']);
+      String pemberiTugas = _getPemberiTugas(notification['tugas']['pemberi_tugas']);
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PrintLetterScreen(),
+            ),
+          );
+        },
+        child: NotificationCard(
+          name: pemberiTugas,
+          message: "Tugas $tugasNama diterima oleh $pemberiTugas.",
+          backgroundColor: Colors.green[200],
+        ),
+      );
+    }).toList());
+
+    notifications.addAll(_filteredDeclineNotifications.map((notification) {
+      String tugasNama = _getTugasNama(notification['tugas']);
+      String pemberiTugas = _getPemberiTugas(notification['tugas']['pemberi_tugas']);
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => NotificationDetailScreen(
+                title: "Tugas $tugasNama ditolak",
+                message: "Tugas kurang sesuai",
+              ),
+            ),
+          );
+        },
+        child: NotificationCard(
+          name: pemberiTugas,
+          message: "Pengumpulan tugas $tugasNama ditolak!",
+          backgroundColor: Colors.red[200],
+        ),
+      );
+    }).toList());
+
+    // If no notifications found
+    if (notifications.isEmpty) {
+      notifications.add(
+        Container(
+          alignment: Alignment.center,
+          padding: EdgeInsets.all(16),
+          child: Text(
+            'Tidak ada notifikasi untuk filter ini',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    }
+
+    return notifications;
   }
 
   // Fungsi untuk mendapatkan nama tugas

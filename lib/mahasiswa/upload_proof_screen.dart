@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:file_picker/file_picker.dart'; // For file picking
-import 'package:intl/intl.dart'; // Import intl for date formatting
+import 'package:file_picker/file_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 
 class UploadProofScreen extends StatefulWidget {
   final String tugasId;
-  final String applyID; // Assuming this is the applyId you need to pass
+  final String applyID;
 
   UploadProofScreen({required this.tugasId, required this.applyID});
 
@@ -17,6 +17,7 @@ class UploadProofScreen extends StatefulWidget {
 
 class _UploadProofScreenState extends State<UploadProofScreen> {
   late Future<Map<String, dynamic>> taskDetails;
+  PlatformFile? selectedFile;
 
   @override
   void initState() {
@@ -57,7 +58,7 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
 
     try {
       final response = await dio.post(
-        'https://kompen.kufoto.my.id/api/download_tugas', // Adjust URL as needed
+        'https://kompen.kufoto.my.id/api/download_tugas',
         data: {'tugas_id': tugasId},
       );
 
@@ -65,12 +66,10 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
         String fileUrl = response.data['url'];
 
         if (fileUrl.isNotEmpty) {
-          // Ensure that the fileUrl is a full URL, prepend the base URL if it's relative
           if (!fileUrl.startsWith('http://') && !fileUrl.startsWith('https://')) {
             fileUrl = 'https://kompen.kufoto.my.id$fileUrl';
           }
 
-          print('File URL: $fileUrl');
           downloadFileFromUrl(fileUrl);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -98,8 +97,6 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
         fileUrl = 'https://kompen.kufoto.my.id/storage/posts/tugas$fileUrl';  
       }
 
-      print('Attempting to download file from URL: $fileUrl');
-
       String fileName = fileUrl.split('/').last;
 
       final directory = await getApplicationDocumentsDirectory();
@@ -116,13 +113,10 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
       );
 
       if (response.statusCode == 200) {
-        print('File downloaded to: $savePath');
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('File berhasil diunduh! Lokasi: $savePath')),
         );
       } else {
-        print('Failed to download file, status code: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Gagal mengunduh file')),
         );
@@ -136,86 +130,109 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
   }
 
   void uploadFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'],
+    );
 
     if (result != null) {
-      List<int> fileBytes = result.files.single.bytes ?? [];
-      String fileName = result.files.single.name;
-
-      print('Selected file: $fileName');
-      print('File size: ${result.files.single.size} bytes');
-      print('File type: ${result.files.single.extension}');
-
-      if (result.files.single.size > 5120000) {
-        print('File is too large, must be less than 5MB');
-        return;
-      }
-
-      List<String> allowedExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'];
-      if (!allowedExtensions.contains(result.files.single.extension)) {
-        print('Invalid file type');
-        return;
-      }
-
-      FormData formData = FormData.fromMap({
-        'file_mahasiswa': MultipartFile.fromBytes(fileBytes, filename: fileName),
-        'apply_id': widget.applyID, // Ensure applyId is valid
+      setState(() {
+        selectedFile = result.files.single;
       });
 
-      Dio dio = Dio();
-      try {
-        final response = await dio.post(
-          'https://kompen.kufoto.my.id/api/upload', // Replace with your actual API URL
-          data: formData,
+      // Validate file size
+      if (selectedFile!.size > 5120000) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('File terlalu besar. Maksimal 5MB'),
+            backgroundColor: Colors.red,
+          ),
         );
-
-        if (response.statusCode == 200) {
-          var responseData = response.data;
-          String message = responseData['message'] ?? 'Berhasil Mengirim Pekerjaan';
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message)),
-          );
-        }
-      } catch (e) {
-        print('Error during file upload: $e');
+        setState(() {
+          selectedFile = null;
+        });
+        return;
       }
     }
   }
 
-  // Function to send the task to API (kirim)
   void sendTaskToApi() async {
+    // Check if a file is selected
+    if (selectedFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Silakan pilih file bukti terlebih dahulu'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     Dio dio = Dio();
     try {
-      print('Sending apply_id: ${widget.applyID}');
-      
+      List<int> fileBytes = selectedFile!.bytes ?? [];
+      String fileName = selectedFile!.name;
+
+      FormData formData = FormData.fromMap({
+        'file_mahasiswa': MultipartFile.fromBytes(fileBytes, filename: fileName),
+        'apply_id': widget.applyID,
+      });
+
       final response = await dio.post(
-        'https://kompen.kufoto.my.id/api/kirim', // Correct API URL
+        'https://kompen.kufoto.my.id/api/upload',
+        data: formData,
+      );
+
+      if (response.statusCode == 200) {
+        var responseData = response.data;
+        String message = responseData['message'] ?? 'Berhasil Mengirim Pekerjaan';
+        
+        // If upload successful, proceed with sending task
+        await sendFinalTaskToApi(message);
+      }
+    } catch (e) {
+      print('Error during file upload: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal mengunggah file'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> sendFinalTaskToApi(String uploadMessage) async {
+    Dio dio = Dio();
+    try {
+      final response = await dio.post(
+        'https://kompen.kufoto.my.id/api/kirim',
         data: {
-          'apply_id': widget.applyID, // Adjust to match the parameter in your controller
+          'apply_id': widget.applyID,
         },
       );
 
       if (response.statusCode == 200) {
-        // Handle success
-        print('Response data: ${response.data}');
-        var responseData = response.data;
-        String message = responseData['message'] ?? 'Berhasil Mengirim Pekerjaan';
-
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
+          SnackBar(
+            content: Text('$uploadMessage\nTugas berhasil dikirim'),
+            backgroundColor: Colors.green,
+          ),
         );
       } else {
-        // Handle failure
-        print('Failed to send task: ${response.statusCode}');
-        print('Response body: ${response.data}');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal Mengirim Pekerjaan')),
+          SnackBar(
+            content: Text('Gagal mengirim tugas'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
       print('Error during task submission: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: Gagal mengirim tugas')),
+        SnackBar(
+          content: Text('Error: Gagal mengirim tugas'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -251,7 +268,7 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
           String tugasTipe = task['tugas_tipe'] ?? 'Tipe Tugas Tidak Diketahui';
           String tugasDeskripsi = task['tugas_deskripsi'] ?? 'Deskripsi Tidak Tersedia';
           String tugasTenggat = task['tugas_tenggat'] ?? 'Tanggal Tenggat Tidak Diketahui';
-          String tugasAlpha = task['tugas_alpha'] ?? 'Tidak Diketahui'; // Set a default value if not present
+          String tugasAlpha = task['tugas_alpha'] ?? 'Tidak Diketahui';
 
           return SingleChildScrollView(
             padding: EdgeInsets.all(16),
@@ -284,10 +301,11 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
                                 style: TextStyle(color: Colors.green),
                               ),
                               SizedBox(height: 8),
-                              Icon(
-                                Icons.task,
-                                size: 100,
-                                color: Colors.blueAccent,
+                              Image.asset(
+                                'assets/description.png',
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
                               ),
                               SizedBox(height: 8),
                               Text(
@@ -311,7 +329,7 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
                           onTap: () {
                             String? fileUrl = task['file_tugas'];
                             if (fileUrl != null && fileUrl.isNotEmpty) {
-                              downloadFileFromUrl(fileUrl); // Trigger download from the file URL
+                              downloadFileFromUrl(fileUrl);
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text('Tidak ada file tugas untuk diunduh')),
@@ -330,14 +348,79 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
                           title: Text('Batas Pengumpulan: $tugasAlpha'),
                         ),
                         SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: uploadFile,
-                          child: Text("Upload Bukti"),
+                        
+                        // File Selection Section
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    selectedFile != null 
+                                      ? 'Terpilih: ${selectedFile!.name}' 
+                                      : 'Belum ada file dipilih',
+                                    style: TextStyle(
+                                      color: selectedFile != null ? Colors.black : Colors.grey,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                ElevatedButton.icon(
+                                  onPressed: uploadFile,
+                                  icon: Icon(Icons.upload_file),
+                                  label: Text('Pilih File'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        SizedBox(height: 8),
-                        ElevatedButton(
-                          onPressed: sendTaskToApi,
-                          child: Text("Kirim Tugas"),
+
+                        // Send Task Button
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          child: Container(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: selectedFile != null ? sendTaskToApi : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: selectedFile != null ? Colors.green : Colors.grey,
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(vertical: 15),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.send),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Kirim Tugas',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
