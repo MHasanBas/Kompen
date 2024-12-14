@@ -52,12 +52,14 @@ dependencies:
   flutter_launcher_icons: "^0.14.1"
   open_file: ^3.2.1
   path_provider: ^2.1.5
-  pdf: ^3.8.1
-  printing: ^5.9.1
+  pdf: ^3.10.8
+  printing: ^5.12.0
   rflutter_alert: ^2.0.4
   webview_flutter: ^3.0.4
   flutter_pdfview: ^1.2.9
   image_picker: ^0.8.7+3
+  
+ 
 
 
 

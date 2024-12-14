@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
+import 'package:kompen/mahasiswa/print_letter_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'cetak/cetaksurat.dart';
 import 'notification_screen.dart';
@@ -157,7 +158,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => CetakScreen(),
+                              builder: (context) =>PrintLetterScreen(),
                             ),
                           );
                         },
