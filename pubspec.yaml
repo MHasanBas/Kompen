@@ -58,8 +58,9 @@ dependencies:
   webview_flutter: ^3.0.4
   flutter_pdfview: ^1.2.9
   image_picker: ^0.8.7+3
-  
- 
+  flutter_secure_storage: ^8.0.0
+  qr_flutter: ^4.1.0
+
 
 
 

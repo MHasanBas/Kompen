@@ -1,80 +1,174 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'models/task.dart';
+import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'lihat_tugas.dart';
 import 'task_approval_page.dart';
 import 'notifikasi.dart';
 import 'cek_tugas.dart';
 import 'ProfilePage.dart';
 import 'add_task_page.dart';
-import 'alpha_mahasiswa_page.dart ';
+import 'alpha_mahasiswa_page.dart';
 import 'KompenMahasiswaPage.dart';
 import 'qr_code_page.dart';
-import '../about_page.dart';
 
-class HomeScreen extends StatelessWidget {
-  final List<Task> tasks = [
-    Task(
-      title: 'Membuat PPT',
-      description: 'Membuat Power Point presentasi mata kuliah',
-    ),
-    Task(
-      title: 'Rekap Nilai',
-      description:
-          'Merekap nilai mahasiswa seluruh tingkat 3 menggunakan excel',
-    ),
-  ];
+const String urlDomain = "kompen.kufoto.my.id";
+const String urlDashboard = "https://$urlDomain/api/dashboarddsn";
+const String urlApprovalData = "https://$urlDomain/api/apply_mahasiswa";
+const String urlAccData = "https://$urlDomain/api/acc";
+const String urlDeclineData = "https://$urlDomain/api/decline";
+
+final Dio dio = Dio();
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String userName = "Loading...";
+  String userNidn = "Loading...";
+  List<dynamic> applyTugas = [];
+
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  Future<void> fetchData() async {
+    try {
+      String? authToken = await getAuthToken();
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
+      final response = await dio.post(
+        urlDashboard,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $authToken',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        setState(() {
+          userName = data['user']?['dosen_nama'] ?? "Nama tidak tersedia";
+          userNidn = data['user']?['nidn'] ?? "NIDN tidak tersedia";
+          applyTugas = data['data'] ?? [];
+        });
+      } else {
+        throw Exception('Gagal memuat tugas');
+      }
+    } catch (e) {
+      setState(() {
+        userName = "Error: $e";
+        userNidn = "Error: $e";
+        applyTugas = [];
+      });
+      print('Error: $e');
+    }
+  }
+
+  Future<void> updateStatus(int applyId, bool isApproved) async {
+    try {
+      String? authToken = await getAuthToken();
+
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
+      final String url = isApproved ? urlAccData : urlDeclineData;
+
+      final response = await dio.post(
+        url,
+        data: {'apply_id': applyId},
+        options: Options(
+          headers: {'Authorization': 'Bearer $authToken'},
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Aplikasi ${isApproved ? 'disetujui' : 'ditolak'} dengan sukses!',
+            ),
+          ),
+        );
+        fetchData();
+      } else {
+        throw Exception('Gagal memperbarui status');
+      }
+    } catch (e) {
+      print('Error updating status: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memperbarui status')),
+      );
+    }
+  }
+
+ String formatName(String name) {
+    List<String> nameParts = name.split(' ');
+    if (nameParts.length > 2) {
+      return '${nameParts[0]}  ${nameParts[1]} ..';
+    }
+    return name;
+  }
+
+  String formatNidn(String nidn) {
+    if (nidn.length > 15) {
+      return '${nidn.substring(0, 15)}...';
+    }
+    return nidn;
+  }
 
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      automaticallyImplyLeading: false,
-      title: Text(
-        'Suka Kompen.',
-        style: GoogleFonts.poppins(
-          textStyle: const TextStyle(
-            fontSize: 24.0,
-            fontWeight: FontWeight.w900,
-            color: Color(0xFF191970),
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text(
+          'Suka Kompen.',
+          style: GoogleFonts.poppins(
+            textStyle: const TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF191970),
+            ),
           ),
         ),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+        toolbarHeight: 90,
       ),
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-      toolbarHeight: 90,
-      actions: [
-        IconButton(
-          icon: Icon(
-            Icons.info_outline, // Icon untuk info
-            color: Color(0xFF191970), // Warna icon
-          ),
-          onPressed: () {
-            // Navigasi ke halaman Tentang Pengembang
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AboutPage()),
-            );
-          },
-          tooltip: 'Info Pengembang', // Teks saat icon di-hover (opsional)
-        ),
-      ],
-    ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              children: [
-                Padding(
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
                         children: [
                           CircleAvatar(
                             radius: 35,
@@ -90,66 +184,74 @@ class HomeScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Septian enggar',
+                                formatName(userName),
                                 style: GoogleFonts.poppins(
                                   textStyle: const TextStyle(
-                                    fontSize: 20.0,
+                                    fontSize: 15.0,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ),
                               Text(
-                                '21237880012',
+                                formatNidn(userNidn),
                                 style: GoogleFonts.poppins(
                                   textStyle: const TextStyle(
-                                    fontSize: 14.0,
+                                    fontSize: 13.0,
                                     color: Color.fromARGB(255, 87, 86, 86),
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 10),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => LihatTugasPage()),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF191970),
-                                ),
-                                child: const Text(
-                                  'Lihat Tugas',
-                                  style: TextStyle(color: Colors.white),
-                                ),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LihatTugasPage(),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF191970),
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
+                              child: const Text(
+                                'Lihat Tugas',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ),
+                    // QR code scanner button
+                    Column(
+                      children: [
+                        const SizedBox(height: 32), // Add more space above the button
+                        Padding(
+                          padding: const EdgeInsets.only(right: 16.0), // Move button to the right
+                          child: IconButton(
+                            icon: const Icon(Icons.qr_code_scanner),
+                            iconSize: 70.0,
+                            color: const Color(0xFF191970),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => QRCodePage()),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                // Positioned widget untuk memindahkan tombol scan QR
-                Positioned(
-                  top: 30, // Atur lebih tinggi
-                  right: 30, // Atur ke kanan
-                  child: IconButton(
-                    icon: const Icon(Icons.qr_code_scanner),
-                    iconSize: 90.0,
-                    color: const Color(0xFF191970),
-                    onPressed: () {
-                        Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => QRCodePage()),
-            );
-                      // Tambahkan logika untuk scan QR
-                    },
-                  ),
-                ),
-              ],
+              ),
             ),
+          ),
+        
+
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
@@ -202,56 +304,73 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: tasks.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
-                  child: Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+            applyTugas.isEmpty
+                ? Center(
+                    child: Text(
+                      'Belum ada yang apply',
+                      style: GoogleFonts.poppins(
+                        textStyle: const TextStyle(
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54,
+                        ),
+                      ),
                     ),
-                    child: ListTile(
-                      leading: const Icon(
-                        Icons.cloud_off,
-                        size: 40.0,
-                      ),
-                      title: Text(
-                        tasks[index].title,
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
+                  )
+                : SizedBox(
+                    height: 400,
+                    child: ListView.builder(
+                      itemCount: applyTugas.length,
+                      itemBuilder: (context, index) {
+                        final task = applyTugas[index];
+                        final tugas = task['tugas'];
+                        final mahasiswa = task['mahasiswa'];
+
+                        return Card(
+                          margin: const EdgeInsets.all(10),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.all(10),
+                            leading: const Icon(Icons.assignment, size: 50),
+                            title: Text(
+                              tugas != null &&
+                                      tugas.containsKey('tugas_nama') &&
+                                      tugas['tugas_nama'] != null
+                                  ? tugas['tugas_nama']
+                                  : 'Raw Data: ${task.toString()}',
+                            ),
+                            subtitle: Text(
+                              'Mahasiswa: ${mahasiswa != null ? mahasiswa['mahasiswa_nama'] : 'Unknown'}\n'
+                              'NIM: ${mahasiswa != null ? mahasiswa['nim'] : 'Unknown'}\n'
+                              'Status: ${task['approval']?['status'] ?? 'Pending'}',
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.close,
+                                      color: Colors.red),
+                                  onPressed: () {
+                                    updateStatus(task['apply_id'], false);
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.check,
+                                      color: Colors.green),
+                                  onPressed: () {
+                                    updateStatus(task['apply_id'], true);
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
-                      subtitle: Text(tasks[index].description),
-                      trailing: ElevatedButton(
-                        onPressed: () {
-                          // Action ketika request task ditekan
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.yellow[600],
-                        ),
-                        child: const Text(
-                          'Cek Request',
-                          style: TextStyle(
-                              color: Color.fromARGB(
-                                  255, 51, 50, 50)), // Ubah warna teks di sini
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
-                );
-              },
-            ),
           ],
         ),
       ),
+      // Bottom Navigation Bar
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 5,
@@ -266,7 +385,7 @@ class HomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                    MaterialPageRoute(builder: (context) => const HomeScreen()),
                   );
                 },
               ),

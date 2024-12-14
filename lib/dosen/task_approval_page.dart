@@ -36,52 +36,42 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
   }
 
   Future<void> fetchTasks() async {
-  setState(() {
-    isLoading = true;
-  });
-
-  try {
-    String? authToken = await getAuthToken();
-    if (authToken == null) {
-      throw Exception('Token tidak ditemukan');
-    }
-
-    final response = await dio.post(
-      urlApprovalData,
-      options: Options(
-        headers: {'Authorization': 'Bearer $authToken'},
-      ),
-    );
-
-    print('Response data: ${response.data}'); // Debugging Response
-
-    final pendingData = response.data['pending'];
-
-    // Pastikan pendingData adalah Map dan bukan Null
-    if (pendingData is Map<String, dynamic>) {
-      tasks = pendingData.entries.map((entry) {
-        final value = entry.value;
-
-        return {
-          'tugas': value['tugas'] ?? {},
-          'apply': value['apply'] ?? [],
-        };
-      }).toList();
-    } else {
-      tasks = [];
-    }
-  } catch (e) {
-    print('Error fetching tasks: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Gagal mengambil data tugas')),
-    );
-  } finally {
     setState(() {
-      isLoading = false;
+      isLoading = true;
     });
-  }
-}
 
+    try {
+      String? authToken = await getAuthToken();
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
+      final response = await dio.post(
+        urlApprovalData,
+        options: Options(
+          headers: {'Authorization': 'Bearer $authToken'},
+        ),
+      );
+
+      print('Response data: ${response.data}'); // Debugging Response
+
+      // Directly parse the data from the API response
+      if (response.data['data'] is List) {
+        tasks = List<Map<String, dynamic>>.from(response.data['data']);
+      } else {
+        tasks = [];
+      }
+    } catch (e) {
+      print('Error fetching tasks: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal mengambil data tugas')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   Future<void> updateStatus(int applyId, bool isApproved) async {
     try {
@@ -121,60 +111,56 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
   }
 
   @override
- Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      backgroundColor: Colors.white,
-      title: Text(
-        'Suka Kompen.',
-        style: GoogleFonts.poppins(
-          textStyle: const TextStyle(
-            fontSize: 24.0,
-            fontWeight: FontWeight.w900,
-            color: Color(0xFF191970),
-          ),
-        ),
-      ),
-      toolbarHeight: 89.0,
-      automaticallyImplyLeading: false,
-      actions: [
-        IconButton(
-          icon: Icon(
-            Icons.info_outline, // Info icon for developer info
-            color: Color(0xFF191970), // Dark blue icon color
-            size: 30, // Adjust icon size for better visibility
-          ),
-          onPressed: () {
-            // Navigate to the About Page when the icon is pressed
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AboutPage()),
-            );
-          },
-          tooltip: 'Info Pengembang', // Tooltip text on hover
-        ),
-      ],
-    ),
-    backgroundColor: const Color(0xFFF9F9F9), // Background color for the body
-    body: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            'Apply Page',
-            style: GoogleFonts.poppins(
-              textStyle: const TextStyle(
-                fontSize: 18.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.black54,
-              ),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: Text(
+          'Suka Kompen.',
+          style: GoogleFonts.poppins(
+            textStyle: const TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF191970),
             ),
           ),
         ),
-        // Add more widgets here as needed
-      
-  
+        toolbarHeight: 89.0,
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.info_outline,
+              color: Color(0xFF191970),
+              size: 30,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutPage()),
+              );
+            },
+            tooltip: 'Info Pengembang',
+          ),
+        ],
+      ),
+      backgroundColor: const Color(0xFFF9F9F9),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Approval Page',
+              style: GoogleFonts.poppins(
+                textStyle: const TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
+                ),
+              ),
+            ),
+          ),
           Expanded(
             child: isLoading
                 ? Center(
@@ -198,45 +184,50 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
                         itemBuilder: (context, index) {
                           final task = tasks[index];
                           final tugas = task['tugas'];
-                          final apply =
-                              (task['apply'] as List).isNotEmpty ? task['apply'][0] : null;
+                          final mahasiswa = task['mahasiswa'];
 
                           return Card(
-                          margin: const EdgeInsets.all(10),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.all(10),
-                            leading: Image.asset(
-                              'assets/task.jpg', // Update this with your image path
-                              width: 50, // Set the width as per your design
-                              height: 50, // Set the height as per your design
-                              fit: BoxFit.cover, // Adjust the image fitting
-                            ),
-                            title: Text(
-                              tugas?['tugas_nama'] ?? 'Nama Tugas Tidak Ditemukan',
-                            ),
-                            subtitle: Text(
-                              'Status: ${apply?['apply_status'] ?? 'Pending'}',
-                            ),
-  
+                            margin: const EdgeInsets.all(10),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.all(10),
+                              leading: Image.asset(
+                                'assets/task.jpg',
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                              ),
+                              title: Text(
+                                tugas['tugas_nama'] ?? 'Nama Tugas Tidak Ditemukan',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Mahasiswa: ${mahasiswa['mahasiswa_nama'] ?? 'Nama Tidak Ditemukan'}',
+                                    style: GoogleFonts.poppins(),
+                                  ),
+                                  Text(
+                                    'NIM: ${mahasiswa['nim'] ?? 'NIM Tidak Ditemukan'}',
+                                    style: GoogleFonts.poppins(),
+                                  ),
+                                ],
+                              ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
-                                    icon:
-                                        const Icon(Icons.close, color: Colors.red),
+                                    icon: const Icon(Icons.close, color: Colors.red),
                                     onPressed: () {
-                                      if (apply != null) {
-                                        updateStatus(apply['apply_id'], false);
-                                      }
+                                      updateStatus(task['apply_id'], false);
                                     },
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.check,
-                                        color: Colors.green),
+                                    icon: const Icon(Icons.check, color: Colors.green),
                                     onPressed: () {
-                                      if (apply != null) {
-                                        updateStatus(apply['apply_id'], true);
-                                      }
+                                      updateStatus(task['apply_id'], true);
                                     },
                                   ),
                                 ],
