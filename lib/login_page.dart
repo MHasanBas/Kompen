@@ -97,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
     } else if (levelId == '3') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => tendik.HomeScreen()),
+        MaterialPageRoute(builder: (context) => dosen.HomeScreen()),
       );
     } else {
       showLoginResultDialog(context, 'Level pengguna tidak dikenali.', false, null);

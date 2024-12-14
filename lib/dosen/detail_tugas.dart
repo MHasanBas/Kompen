@@ -56,84 +56,82 @@ class _DetailTugasPage extends State<DetailTugasPage> {
   }
 
   void deleteData(String tugasId) async {
-  // Show confirmation dialog before deleting
-  bool? confirmDelete = await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        backgroundColor: Colors.white, // Match the app's background color
-        title: Text(
-          'Konfirmasi Hapus Tugas',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.blueGrey[900], // Consistent text color
-          ),
-        ),
-        content: Text(
-          'Apakah Anda yakin ingin menghapus tugas ini?',
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: Colors.blueGrey[700], // Subtle text color for the message
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: Text(
-              'Batal',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: const Color(0xFF6200EE), // Consistent button color
-              ),
+    // Show confirmation dialog before deleting
+    bool? confirmDelete = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: Text(
+            'Konfirmasi Hapus Tugas',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.blueGrey[900],
             ),
-            onPressed: () {
-              Navigator.of(context).pop(false); // User cancels the action
-            },
           ),
-          TextButton(
-            child: Text(
-              'Hapus',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.red, // Red for a warning action
-              ),
+          content: Text(
+            'Apakah Anda yakin ingin menghapus tugas ini?',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.blueGrey[700],
             ),
-            onPressed: () {
-              Navigator.of(context).pop(true); // User confirms deletion
-            },
           ),
-        ],
-      );
-    },
-  );
-
-  if (confirmDelete == true) {
-    try {
-      Response response = await dio.post(
-        url_delete_data,
-        data: {"tugas_id": tugasId},
-      );
-
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tugas berhasil dihapus')),
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                'Batal',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: const Color(0xFF6200EE),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: Text(
+                'Hapus',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
         );
-        Navigator.pop(context);
-      } else {
+      },
+    );
+
+    if (confirmDelete == true) {
+      try {
+        Response response = await dio.post(
+          url_delete_data,
+          data: {"tugas_id": tugasId},
+        );
+
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Tugas berhasil dihapus')),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Gagal menghapus tugas')),
+          );
+        }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal menghapus tugas')),
+          const SnackBar(content: Text('Terjadi kesalahan saat menghapus tugas')),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Terjadi kesalahan saat menghapus tugas')),
-      );
     }
   }
-}
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +197,7 @@ class _DetailTugasPage extends State<DetailTugasPage> {
                           Column(
                             children: [
                               Image.asset(
-                                'assets/description.png', // Path gambar di project Anda
+                                'assets/description.png',
                                 height: 250,
                               ),
                               const SizedBox(height: 16),
@@ -225,7 +223,10 @@ class _DetailTugasPage extends State<DetailTugasPage> {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                EditTugasPage(),
+                                                EditTugasPage(
+                                              tugasId: widget.tugasId,
+                                              existingTugas: tugas,
+                                            ),
                                           ),
                                         );
                                       } else {
