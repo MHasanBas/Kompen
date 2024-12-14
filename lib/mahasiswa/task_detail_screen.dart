@@ -62,13 +62,29 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           isLoading = false;
         });
       } else {
-        throw Exception('Gagal memuat detail tugas');
+        String errorMessage = response.data['message'] ?? 'Gagal memuat detail tugas';
+        throw Exception(errorMessage);
       }
     } catch (e) {
       print("Error fetching task detail: $e");
       setState(() {
         isLoading = false;
       });
+
+      String errorMessage = "Terjadi kesalahan, silakan coba lagi.";
+      if (e is DioException) {
+        // Handle DioError specifically and show the error message from the response
+        if (e.response != null && e.response!.data != null) {
+          errorMessage = e.response!.data['message'] ?? 'Gagal memuat data.';
+        }
+      }
+
+      _showCustomDialog(
+        title: "Gagal Memuat Tugas",
+        message: errorMessage,
+        icon: Icons.error,
+        color: Colors.red,
+      );
     }
   }
 
@@ -100,12 +116,21 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           navigateBack: true,
         );
       } else {
-        throw Exception('Gagal melakukan apply');
+        String errorMessage = response.data['message'] ?? 'Gagal melakukan apply';
+        throw Exception(errorMessage);
       }
     } catch (e) {
+      String errorMessage = "Terjadi kesalahan, silakan coba lagi.";
+      if (e is DioException) {
+        // Handle DioError specifically and show the error message from the response
+        if (e.response != null && e.response!.data != null) {
+          errorMessage = e.response!.data['message'] ?? 'Gagal memuat data.';
+        }
+      }
+
       _showCustomDialog(
         title: "Gagal!",
-        message: "Terjadi kesalahan: $e",
+        message: errorMessage,
         icon: Icons.error,
         color: Colors.red,
       );
@@ -121,59 +146,30 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   }) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color),
+              SizedBox(height: 10),
+              Text(message),
+            ],
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
-                  size: 80,
-                  color: color,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  message,
-                  style: const TextStyle(fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: color,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    if (navigateBack) {
-                      Navigator.of(context).pop(); // Kembali ke TaskScreen
-                    }
-                  },
-                  child: const Text(
-                    'OK',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (navigateBack) {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop(); // Navigates back to previous screen
+                } else {
+                  Navigator.of(context).pop(); // Just close the dialog
+                }
+              },
+              child: Text('OK'),
             ),
-          ),
+          ],
         );
       },
     );

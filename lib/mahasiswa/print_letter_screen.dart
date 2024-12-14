@@ -14,7 +14,6 @@ class PrintLetterScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Card Section
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(

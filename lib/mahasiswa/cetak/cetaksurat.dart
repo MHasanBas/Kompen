@@ -11,7 +11,7 @@ class CetakScreen extends StatefulWidget {
 class _CetakScreenState extends State<CetakScreen> {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: "https://kompen.kufoto.my.id/api", // Ganti dengan URL Laravel API Anda
+      baseUrl: "https://kompen.kufoto.my.id/api", 
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {"Content-Type": "application/json"},
@@ -29,7 +29,7 @@ class _CetakScreenState extends State<CetakScreen> {
 
   Future<void> _fetchTaskData() async {
     try {
-      final taskId = 2; // ID tugas dapat diganti dengan nilai dinamis
+      final taskId = 2; 
       final Response response = await _dio.post(
         '/show_history',
         data: {"tugas_id": taskId},
@@ -172,65 +172,61 @@ class _CetakScreenState extends State<CetakScreen> {
                             Icon(Icons.access_time, size: 20), // Dikurangi dari default
                             SizedBox(width: 8), // Dikurangi dari 10
                        Column(
-  mainAxisAlignment: MainAxisAlignment.center,
-  crossAxisAlignment: CrossAxisAlignment.center,
-  children: [
-    Text(
-      'Tanggal', // Label
-      style: GoogleFonts.exo(
-        textStyle: TextStyle(
-          fontSize: 13.0, // Ukuran font untuk label
-          fontWeight: FontWeight.w600,
-          color: const Color(0xFF666666),
-        ),
-      ),
-    ),
-    SizedBox(height: 5), // Jarak antara label dan nilai tanggal
-    Text(
-      _taskData?['tugas_tenggat'] != null
-          ? _taskData!['tugas_tenggat'].split(' ')[0] // Mengambil hanya tanggal
-          : 'No Date',
-      style: GoogleFonts.exo(
-        textStyle: TextStyle(
-          fontSize: 13.0, // Ukuran font untuk nilai tanggal
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    ),
-  ],
-),
-
-
-
-                            
-                             SizedBox(width: 80), // Dikurangi dari 100
-      Icon(
-        Icons.arrow_downward,
-        color: Colors.red,
-        size: 18, // Dikurangi dari default
-      ),
-      SizedBox(width: 8), // Dikurangi dari 10
-      Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            '${_taskData?['jam'] ?? '-'} Jam', // Menampilkan nilai "jam"
-            style: GoogleFonts.exo(
-              textStyle: TextStyle(
-                  fontSize: 13.0, // Dikurangi dari 15.0
-                  fontWeight: FontWeight.w600),
-            ),
-          ),
-          Text(
-            'Alpa',
-            style: GoogleFonts.exo(
-              textStyle: TextStyle(
-                  color: const Color(0xFF666666),
-                  fontSize: 13.0, // Dikurangi dari 15.0
-                  fontWeight: FontWeight.w600),
-            ),
-          ),
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Tanggal', // Label
+                            style: GoogleFonts.exo(
+                              textStyle: TextStyle(
+                                fontSize: 13.0, // Ukuran font untuk label
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF666666),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 5), // Jarak antara label dan nilai tanggal
+                          Text(
+                            _taskData?['tugas_tenggat'] != null
+                                ? _taskData!['tugas_tenggat'].split(' ')[0] // Mengambil hanya tanggal
+                                : 'No Date',
+                            style: GoogleFonts.exo(
+                              textStyle: TextStyle(
+                                fontSize: 13.0, // Ukuran font untuk nilai tanggal
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(width: 80), // Dikurangi dari 100
+                        Icon(
+                          Icons.arrow_downward,
+                          color: Colors.red,
+                          size: 18, // Dikurangi dari default
+                        ),
+                        SizedBox(width: 8), // Dikurangi dari 10
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              '${_taskData?['jam'] ?? '-'} Jam', // Menampilkan nilai "jam"
+                              style: GoogleFonts.exo(
+                                textStyle: TextStyle(
+                                    fontSize: 13.0, // Dikurangi dari 15.0
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                            Text(
+                              'Alpa',
+                              style: GoogleFonts.exo(
+                                textStyle: TextStyle(
+                                    color: const Color(0xFF666666),
+                                    fontSize: 13.0, 
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ),
                               ],
                             )
                           ],

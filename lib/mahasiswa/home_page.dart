@@ -59,12 +59,10 @@ if (response.statusCode == 200) {
     userNim = data['mahasiswa']['nim'];
     userTotal = data['mahasiswa']['jumlah_alpa'].toString();
     
-    // Check if tugas is a map or a list and handle accordingly
     if (data['tugas'] is List) {
       tugas = List.from(data['tugas']);
     } else if (data['tugas'] is Map) {
-      // If it's a map, you might need to extract its values or handle it differently
-      tugas = List.from(data['tugas'].values); // Example: converting map values into a list
+      tugas = List.from(data['tugas'].values); 
     } else {
       tugas = [];
     }

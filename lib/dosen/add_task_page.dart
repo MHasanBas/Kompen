@@ -91,7 +91,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
   try {
     FormData formData = FormData.fromMap(taskData);
     
-    // Mengirim file jika ada
     if (_filePath != null) {
       formData.files.add(
         MapEntry(
@@ -112,28 +111,22 @@ class _AddTaskPageState extends State<AddTaskPage> {
     final response = await dio.post('https://kompen.kufoto.my.id/api/tugas_dosen/create_data', data: formData);
 
     if (response.statusCode == 200) {
-      // Menampilkan notifikasi sukses jika berhasil
       _showSuccessAlert(context);
     } else {
       _showErrorAlert('Gagal menambahkan tugas: ${response.data['message'] ?? 'Terjadi kesalahan'}');
     }
   } on DioError catch (e) {
-    // Log the error details
     print('Error: ${e.response?.statusCode} ${e.response?.data}');
     
-    // Check for response body and display it
     String errorMessage = 'Terjadi kesalahan';
     if (e.response != null) {
-      // If there is a response, try to extract the message
       errorMessage = e.response?.data['message'] ?? 'Tidak ada pesan kesalahan';
     } else {
-      // Handle case where the error does not contain a response
       errorMessage = e.message ?? 'Kesalahan tidak terduga';
     }
 
     _showErrorAlert('Gagal menambahkan tugas: $errorMessage');
   } catch (e) {
-    // Handle any other errors (like network errors)
     print('Unexpected Error: $e');
     _showErrorAlert('Gagal menambahkan tugas: Terjadi kesalahan tak terduga');
   }
@@ -344,29 +337,29 @@ class _AddTaskPageState extends State<AddTaskPage> {
               SizedBox(height: 16),
 
              Text("Bidang Kompetensi", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-Wrap(
-  spacing: 8.0, // Horizontal space between checkboxes
-  runSpacing: 8.0, // Vertical space between rows
-  children: _bidangKompetensiOptions.map((dynamic value) {
-    return Container(
-      width: (MediaQuery.of(context).size.width - 40) / 2, // Set the width for two columns
-      child: CheckboxListTile(
-        title: Text(value['kompetensi_nama'], style: TextStyle(fontSize: 14)), // Smaller text size
-        value: _selectedBidangKompetensi.contains(value['kompetensi_id'].toString()),
-        onChanged: (bool? selected) {
-          setState(() {
-            if (selected == true) {
-              _selectedBidangKompetensi.add(value['kompetensi_id'].toString());
-            } else {
-              _selectedBidangKompetensi.remove(value['kompetensi_id'].toString());
-            }
-          });
-        },
-        controlAffinity: ListTileControlAffinity.leading,
-      ),
-    );
-  }).toList(),
-),
+              Wrap(
+                spacing: 8.0, // Horizontal space between checkboxes
+                runSpacing: 8.0, // Vertical space between rows
+                children: _bidangKompetensiOptions.map((dynamic value) {
+                  return Container(
+                    width: (MediaQuery.of(context).size.width - 40) / 2, // Set the width for two columns
+                    child: CheckboxListTile(
+                      title: Text(value['kompetensi_nama'], style: TextStyle(fontSize: 14)), // Smaller text size
+                      value: _selectedBidangKompetensi.contains(value['kompetensi_id'].toString()),
+                      onChanged: (bool? selected) {
+                        setState(() {
+                          if (selected == true) {
+                            _selectedBidangKompetensi.add(value['kompetensi_id'].toString());
+                          } else {
+                            _selectedBidangKompetensi.remove(value['kompetensi_id'].toString());
+                          }
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                  );
+                }).toList(),
+              ),
 
               SizedBox(height: 16),
 

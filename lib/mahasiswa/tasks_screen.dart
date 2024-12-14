@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'task_detail_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-final Dio dio = Dio(); // Inisialisasi Dio untuk HTTP request
-
-// URL API
-final String baseUrl = "https://kompen.kufoto.my.id/api/tugas";
+final Dio dio = Dio(); 
 
 class TasksScreen extends StatefulWidget {
   @override
@@ -13,23 +11,31 @@ class TasksScreen extends StatefulWidget {
 }
 
 class _TasksScreenState extends State<TasksScreen> {
-  List<Map<String, dynamic>> tasks = []; // Menyimpan daftar tugas
+  List<Map<String, dynamic>> tasks = [];
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
 
   @override
   void initState() {
     super.initState();
-    fetchTasks(); // Ambil data dari API saat pertama kali dimuat
+    fetchTasks();
   }
 
-  // Fungsi untuk mengambil data tugas dari API
   Future<void> fetchTasks() async {
     try {
+      String? authToken = await getAuthToken();
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+
       final response = await dio.post(
-        baseUrl,
-        data: {}, // Jika tidak membutuhkan data tambahan, kirim objek kosong
+        'https://kompen.kufoto.my.id/api/tugas',
         options: Options(
           headers: {
-            'Content-Type': 'application/json', // Pastikan tipe konten sesuai
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $authToken',
           },
         ),
       );
@@ -39,10 +45,11 @@ class _TasksScreenState extends State<TasksScreen> {
         setState(() {
           tasks = data.map((task) {
             return {
-              "taskId": task["tugas_id"],
+              "taskId": int.tryParse(task["tugas_id"].toString()),
               "title": task["tugas_nama"] ?? "Judul tidak tersedia",
               "description": task["tugas_deskripsi"] ?? "Deskripsi tidak tersedia",
-              "deadline": task["tugas_tenggat"],
+              "deadline": task["tugas_tenggat"] ?? "Tidak ada tenggat",
+              "creator": task["pembuat_tugas"] ?? "Unknown",
             };
           }).toList();
         });
@@ -62,7 +69,7 @@ class _TasksScreenState extends State<TasksScreen> {
         centerTitle: true,
       ),
       body: tasks.isEmpty
-          ? Center(child: CircularProgressIndicator()) // Loader saat data belum tersedia
+          ? Center(child: CircularProgressIndicator())
           : Container(
               color: Colors.grey[100],
               child: ListView.builder(
@@ -102,10 +109,18 @@ class _TasksScreenState extends State<TasksScreen> {
                               fontStyle: FontStyle.italic,
                             ),
                           ),
+                          SizedBox(height: 4),
+                          Text(
+                            "Pembuat: ${tasks[index]["creator"]}",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blueAccent,
+                            ),
+                          ),
                         ],
                       ),
                       leading: Image.asset(
-                        'assets/task.jpg', // Ganti dengan path gambar Anda
+                        'assets/task.jpg',
                         width: 40,
                         height: 120,
                         fit: BoxFit.cover,
@@ -115,7 +130,7 @@ class _TasksScreenState extends State<TasksScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => TaskDetailScreen(
-                              taskId: tasks[index]["taskId"], // Mengirimkan taskId
+                              taskId: tasks[index]["taskId"],
                             ),
                           ),
                         );
