@@ -10,7 +10,6 @@ import 'home_page.dart';
 final Dio dio = Dio();
 
 String url_domain = "https://kompen.kufoto.my.id";
-String url_detail_data = url_domain + "/api/tugas/show";
 String url_apply_data = url_domain + "/api/apply";
 
 class TaskDetailScreen extends StatefulWidget {
@@ -23,7 +22,8 @@ class TaskDetailScreen extends StatefulWidget {
 }
 
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
-  late Map<String, dynamic> taskDetail;
+  late Map<String, dynamic> taskDetail = {};
+
   bool isLoading = true;
 
   Future<String?> getAuthToken() async {
@@ -44,10 +44,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         throw Exception('Token tidak ditemukan');
       }
 
-      final response = await dio.get(
-        url_detail_data,
+      final response = await dio.post(
+        'https://kompen.kufoto.my.id/api/tugas/detail_data',
         queryParameters: {
-          'tugas_id': widget.taskId,
+          'tugas_id': widget.taskId, 
         },
         options: Options(
           headers: {
@@ -72,13 +72,14 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       });
 
       String errorMessage = "Terjadi kesalahan, silakan coba lagi.";
-      if (e is DioException) {
-        // Handle DioError specifically and show the error message from the response
+      if (e is DioError) {
         if (e.response != null && e.response!.data != null) {
           errorMessage = e.response!.data['message'] ?? 'Gagal memuat data.';
+        } else {
+          errorMessage = 'Tidak ada respons dari server';
         }
       }
-
+      
       _showCustomDialog(
         title: "Gagal Memuat Tugas",
         message: errorMessage,
@@ -324,9 +325,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                               color: Colors.red,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'By Bu Titis',
+                          SizedBox(height: 8),
+                          Text(
+                            "By " + (taskDetail["pembuat_tugas"] ?? "Unknown"),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey,
@@ -360,7 +361,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                   const Icon(Icons.arrow_downward, color: Colors.red),
                                   const SizedBox(width: 8),
                                   Text(
-                                    taskDetail["tugas_alpha"] ?? "Alpha tidak tersedia",
+                                    "-" + taskDetail["tugas_jam_kompen"].toString() + " Jam",
                                     style: const TextStyle(fontSize: 14, color: Colors.red),
                                   ),
                                 ],

@@ -45,7 +45,7 @@ class _TasksScreenState extends State<TasksScreen> {
         setState(() {
           tasks = data.map((task) {
             return {
-              "taskId": int.tryParse(task["tugas_id"].toString()),
+              "taskId": task["tugas_id"],
               "title": task["tugas_nama"] ?? "Judul tidak tersedia",
               "description": task["tugas_deskripsi"] ?? "Deskripsi tidak tersedia",
               "deadline": task["tugas_tenggat"] ?? "Tidak ada tenggat",
