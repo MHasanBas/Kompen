@@ -273,36 +273,86 @@ class _CekTugasPageState extends State<CekTugasPage> {
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Card(
-                            color: Colors.grey[200],
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.insert_drive_file, color: Colors.redAccent),
-                                  const SizedBox(width: 8),
-                                  GestureDetector(
-                                    onTap: () {
-                                      downloadFile();
-                                    },
-                                    child: Expanded(
-                                      child: SingleChildScrollView(
-                                        scrollDirection: Axis.horizontal,
-                                        child: Text(
-                                          taskDetail["file_mahasiswa"] ?? "File tidak tersedia",
-                                          style: GoogleFonts.poppins(
-                                            textStyle: const TextStyle(fontSize: 14),
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+Card(
+  elevation: 2, // Tambahkan shadow
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12), // Sudut membulat
+  ),
+  child: Container(
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(12),
+      color: Colors.grey[100], // Warna latar belakang card
+    ),
+    padding: const EdgeInsets.all(12),
+    child: Row(
+      children: [
+        // Ikon dalam lingkaran dengan background soft
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.redAccent.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          padding: const EdgeInsets.all(12),
+          child: const Icon(
+            Icons.insert_drive_file,
+            color: Colors.redAccent,
+            size: 28,
+          ),
+        ),
+        const SizedBox(width: 12),
+
+        // Nama file
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Text(
+              taskDetail["file_mahasiswa"] ?? "File tidak tersedia",
+              style: GoogleFonts.poppins(
+                textStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 12),
+
+        // Tombol Download
+        GestureDetector(
+          onTap: () {
+            downloadFile();
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.blueAccent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: const [
+                Icon(Icons.download, color: Colors.white, size: 20),
+                SizedBox(width: 4),
+                Text(
+                  "Download",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
+
                           const SizedBox(height: 16),
                           Column(
                             children: [

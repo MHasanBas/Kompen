@@ -119,13 +119,7 @@ class _AkumulasiPageState extends State<AkumulasiPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            _buildTimeInfo(Icons.access_time, "$userTotal Jam", "Alpha"),
-                            _buildTimeInfoWithLabel(
-                                Icons.arrow_upward, "+ X", "Alpha",
-                                color: Colors.red),
-                            _buildTimeInfoWithLabel(
-                                Icons.arrow_downward, "- Y", "Alpha",
-                                color: Colors.green),
+                            _buildTimeInfo(Icons.access_time, "$userTotal Jam", "Alpha")
                           ],
                         ),
                         const SizedBox(height: 20),
@@ -144,18 +138,6 @@ class _AkumulasiPageState extends State<AkumulasiPage> {
                           );
                         }).toList(),
                       ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Divider(),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      "Total Alpha = $userTotal Jam",
-                      style: GoogleFonts.poppins(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold,
-                      ),
                     ),
                   ),
                 ],

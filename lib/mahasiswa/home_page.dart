@@ -11,7 +11,7 @@ import 'history_screen.dart';
 import 'tasks_screen.dart';
 import 'notification_screen.dart';
 import 'ProfilePage.dart';
-
+import 'task_detail_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -270,47 +270,6 @@ if (response.statusCode == 200) {
                         ),
                       ],
                     ),
-                    Row(
-                      children: [
-                        Column(
-                          children: const [
-                            Text(
-                              "+x Jam",
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 4), // Added space
-                            Text(
-                              "Alpha",
-                              style: TextStyle(
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: const [
-                            Text(
-                              "-y Jam",
-                              style: TextStyle(
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 4), // Added space
-                            Text(
-                              "Alpha",
-                              style: TextStyle(
-                                color: Colors.green,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
@@ -326,21 +285,33 @@ if (response.statusCode == 200) {
                 ),
               ),
             ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                itemCount: tugas.length,
-                itemBuilder: (context, index) {
-                  final item = tugas[index];
-                  return KompenCard(
-                    title: item['tugas_nama'] ?? "Tidak ada nama",
-                    hours: "${item['tugas_jam_kompen'] ?? 0} Jam",
-                    description: item['tugas_deskripsi'] ?? "Deskripsi kosong",
-                    icon: Icons.task,
-                  );
-                },
+const SizedBox(height: 10),
+Expanded(
+  child: ListView.builder(
+    itemCount: tugas.length,
+    itemBuilder: (context, index) {
+      final item = tugas[index];
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TaskDetailScreen(
+                taskId: item['taskId'],  // Menggunakan taskId dari item
               ),
             ),
+          );
+        },
+        child: KompenCard(
+          title: item['tugas_nama'] ?? "Tidak ada nama",
+          hours: "${item['tugas_jam_kompen'] ?? 0} Jam",
+          description: item['tugas_deskripsi'] ?? "Deskripsi kosong",
+          icon: Icons.task,
+        ),
+      );
+    },
+  ),
+),
           ],
         ),
       ),
