@@ -19,7 +19,7 @@ class DetailTugasPage extends StatefulWidget {
 }
 
 class _DetailTugasPage extends State<DetailTugasPage> {
-  Map<String, dynamic>? tugas;
+  Map<String, dynamic>? detailData;
   bool isLoading = true;
 
   @override
@@ -37,7 +37,7 @@ class _DetailTugasPage extends State<DetailTugasPage> {
 
       if (response.statusCode == 200) {
         setState(() {
-          tugas = response.data;
+          detailData = response.data;
           isLoading = false;
         });
       } else if (response.statusCode == 404) {
@@ -56,7 +56,6 @@ class _DetailTugasPage extends State<DetailTugasPage> {
   }
 
   void deleteData(String tugasId) async {
-    // Show confirmation dialog before deleting
     bool? confirmDelete = await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -178,7 +177,7 @@ class _DetailTugasPage extends State<DetailTugasPage> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            tugas?['tugas_nama'] ?? 'Judul Tugas',
+                            detailData?['tugas']['tugas_nama'] ?? 'Judul Tugas',
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -187,7 +186,7 @@ class _DetailTugasPage extends State<DetailTugasPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            tugas?['tugas_tipe'] ?? 'Status tidak tersedia',
+                            detailData?['tugas']['tugas_tipe'] ?? 'Status tidak tersedia',
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               color: Colors.green,
@@ -202,7 +201,7 @@ class _DetailTugasPage extends State<DetailTugasPage> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                tugas?['tugas_deskripsi'] ??
+                                detailData?['tugas']['tugas_deskripsi'] ??
                                     'Deskripsi tidak tersedia',
                                 style: GoogleFonts.poppins(
                                   fontSize: 14,
@@ -210,22 +209,47 @@ class _DetailTugasPage extends State<DetailTugasPage> {
                                 ),
                                 textAlign: TextAlign.center,
                               ),
+                              const SizedBox(height: 16),
+                              // Kompetensi Section
+                              Text(
+                                'Kompetensi Terkait',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blueGrey[900],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8.0,
+                                runSpacing: 4.0,
+                                children: (detailData?['kompetensi'] as List<dynamic>?)?.map((kompetensi) => 
+                                  Chip(
+                                    label: Text(
+                                      kompetensi,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        color: Colors.blueGrey[700],
+                                      ),
+                                    ),
+                                    backgroundColor: Colors.white,
+                                  )
+                                ).toList() ?? [],
+                              ),
                               const SizedBox(height: 24),
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
                                   ElevatedButton(
                                     onPressed: () {
-                                      if (tugas != null &&
-                                          tugas!['tugas_id'] != null) {
+                                      if (detailData != null &&
+                                          detailData!['tugas']['tugas_id'] != null) {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) =>
-                                                EditTugasPage(
+                                            builder: (context) => EditTugasPage(
                                               tugasId: widget.tugasId,
-                                              existingTugas: tugas,
+                                              existingTugas: detailData!['tugas'],
                                             ),
                                           ),
                                         );
@@ -253,8 +277,8 @@ class _DetailTugasPage extends State<DetailTugasPage> {
                                   ),
                                   ElevatedButton(
                                     onPressed: () {
-                                      if (tugas != null &&
-                                          tugas!['tugas_id'] != null) {
+                                      if (detailData != null &&
+                                          detailData!['tugas']['tugas_id'] != null) {
                                         deleteData(widget.tugasId);
                                       } else {
                                         ScaffoldMessenger.of(context)
