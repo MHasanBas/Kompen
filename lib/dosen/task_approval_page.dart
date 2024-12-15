@@ -53,13 +53,20 @@ class _TaskApprovalPageState extends State<TaskApprovalPage> {
         ),
       );
 
-      print('Response data: ${response.data}'); // Debugging Response
+      print('Response data: ${response.data}');
 
-      // Directly parse the data from the API response
-      if (response.data['data'] is List) {
-        tasks = List<Map<String, dynamic>>.from(response.data['data']);
+      if (response.statusCode == 200 && response.data != null) {
+        if (response.data['data'] is List) {
+          setState(() {
+            tasks = List<Map<String, dynamic>>.from(response.data['data']);
+          });
+        } else {
+          setState(() {
+            tasks = [];
+          });
+        }
       } else {
-        tasks = [];
+        throw Exception('Respons API tidak valid');
       }
     } catch (e) {
       print('Error fetching tasks: $e');
