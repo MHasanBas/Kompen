@@ -153,11 +153,13 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
         });
         return;
       }
+
+      // Automatically upload the selected file after choosing it
+      sendTaskToApi();
     }
   }
 
   void sendTaskToApi() async {
-    // Check if a file is selected
     if (selectedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -175,20 +177,34 @@ class _UploadProofScreenState extends State<UploadProofScreen> {
 
       FormData formData = FormData.fromMap({
         'file_mahasiswa': MultipartFile.fromBytes(fileBytes, filename: fileName),
-        'apply_id': widget.applyID,
+        'apply_id': widget.applyID,  // Pass apply_id
       });
 
       final response = await dio.post(
-        'https://kompen.kufoto.my.id/api/upload',
+        'https://kompen.kufoto.my.id/api/upload',  // Make sure this matches the correct endpoint
         data: formData,
       );
 
       if (response.statusCode == 200) {
         var responseData = response.data;
         String message = responseData['message'] ?? 'Berhasil Mengirim Pekerjaan';
-        
-        // If upload successful, proceed with sending task
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // If the upload is successful, proceed to send the final task (if needed)
         await sendFinalTaskToApi(message);
+      } else {
+        String errorMessage = response.data['message'] ?? 'Terjadi kesalahan';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } catch (e) {
       print('Error during file upload: $e');

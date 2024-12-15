@@ -23,10 +23,23 @@ class ApiService {
   Future<List> fetchAcceptedNotifications(String token) async {
     try {
       final response = await _dio.post(
-        '/api/notif_terima_apply',
+        'https://kompen.kufoto.my.id/api/notif_terima_apply',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
-      return response.data['accepted'] ?? [];
+
+      if (response.statusCode == 200) {
+        return response.data['accepted'] ?? [];
+      } else {
+        print('API Error: ${response.statusCode} - ${response.statusMessage}');
+        return [];
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        print('Endpoint tidak ditemukan: ${e.response?.statusCode}');
+      } else {
+        print('DioException: $e');
+      }
+      return [];
     } catch (error) {
       throw Exception('Gagal memuat notifikasi apply diterima: $error');
     }
@@ -63,7 +76,7 @@ class ApiService {
   Future<List> fetchAcceptNotifications(String token) async {
     try {
       final response = await _dio.post(
-        '/api/notif_terima_tugas',
+        'https://kompen.kufoto.my.id/api/notif_terima_tugas',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
       return response.data['accept'] ?? [];
