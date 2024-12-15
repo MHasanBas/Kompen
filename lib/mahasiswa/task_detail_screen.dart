@@ -325,9 +325,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                               color: Colors.red,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'By Bu Titis',
+                          SizedBox(height: 8),
+                          Text(
+                            "By " + (taskDetail["pembuat_tugas"] ?? "Unknown"),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey,
@@ -361,7 +361,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                   const Icon(Icons.arrow_downward, color: Colors.red),
                                   const SizedBox(width: 8),
                                   Text(
-                                    taskDetail["tugas_alpha"] ?? "Alpha tidak tersedia",
+                                    "-" + taskDetail["tugas_jam_kompen"].toString() + " Jam",
                                     style: const TextStyle(fontSize: 14, color: Colors.red),
                                   ),
                                 ],
