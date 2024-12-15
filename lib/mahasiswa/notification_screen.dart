@@ -370,15 +370,17 @@ class _NotificationScreenState extends State<NotificationScreen> {
     notifications.addAll(_filteredAcceptNotifications.map((notification) {
       String tugasNama = _getTugasNama(notification['tugas']);
       String pemberiTugas = _getPemberiTugas(notification['tugas']['pemberi_tugas']);
+      int approvalId = notification['approval_id'];
       return GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PrintLetterScreen(),
-            ),
-          );
-        },
+      onTap: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => PrintLetterScreen(approvalId: approvalId),
+    ),
+  );
+},
+
         child: NotificationCard(
           name: pemberiTugas,
           message: "Tugas $tugasNama diterima oleh $pemberiTugas.",

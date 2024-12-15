@@ -154,14 +154,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     child: Card(
                       color: Colors.white,
                       child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>PrintLetterScreen(),
-                            ),
-                          );
-                        },
+                       onTap: () {
+  final int approvalId = history['approval_id'] ?? ''; // Ambil approvalId
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => PrintLetterScreen(approvalId: approvalId),
+    ),
+  );
+},
+
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Row(

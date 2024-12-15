@@ -1,20 +1,81 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:shared_preferences/shared_preferences.dart';
 
-class PrintLetterScreen extends StatelessWidget {
-  final Map<String, dynamic> data = {
-    'pemberi_tugas': 'Septian Enggar',
-    'nip_pemberi': '87654321',
-    'nama_mahasiswa': 'M. Hasan Basri',
-    'nim': '2030456789',
-    'semester': '5',
-    'pekerjaan': 'Membuat Aplikasi Flutter',
-    'jumlah_jam': 10,
-    'tanggal': '14 December 2024',
-    'qrCode': 'QR CODE CONTENT HERE',
+class PrintLetterScreen extends StatefulWidget {
+  final int approvalId;
+
+  const PrintLetterScreen({Key? key, required this.approvalId}) : super(key: key);
+
+  @override
+  _PrintLetterScreenState createState() => _PrintLetterScreenState();
+}
+
+class _PrintLetterScreenState extends State<PrintLetterScreen> {
+  Map<String, dynamic> data = {
+    'pemberi_tugas': 'Loading...',
+    'nip_pemberi': 'Loading...',
+    'nama_mahasiswa': 'Loading...',
+    'nim': 'Loading...',
+    'semester': 'Loading...',
+    'pekerjaan': 'Loading...',
+    'jumlah_jam': 0,
+    'tanggal': 'Loading...',
+    'qrCode': '',
   };
+
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLetterData();
+  }
+
+  Future<String?> getAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('auth_token');
+  }
+
+  Future<void> _fetchLetterData() async {
+    try {
+      String? authToken = await getAuthToken();
+
+      if (authToken == null) {
+        throw Exception('Token tidak ditemukan');
+      }
+      final response = await http.post(
+        Uri.parse('https://kompen.kufoto.my.id/api/pdf'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $authToken',
+        },
+        body: json.encode({
+          'approval_id': widget.approvalId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          data = json.decode(response.body);
+          _isLoading = false;
+        });
+      } else {
+        throw Exception('Failed to load letter data');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +88,9 @@ class PrintLetterScreen extends StatelessWidget {
         centerTitle: true,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
+      body: _isLoading 
+        ? Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -38,15 +101,13 @@ class PrintLetterScreen extends StatelessWidget {
                   children: [
                     Text(
                       "KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET, DAN TEKNOLOGI",
-                      style:
-                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 4),
                     Text(
                       "POLITEKNIK NEGERI MALANG",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 4),
@@ -73,7 +134,7 @@ class PrintLetterScreen extends StatelessWidget {
               _buildInfoRow("NIP", data['nip_pemberi']),
               _buildInfoRow("Nama Mahasiswa", data['nama_mahasiswa']),
               _buildInfoRow("NIM", data['nim']),
-              _buildInfoRow("Semester", data['semester']),
+              _buildInfoRow("Semester", "${data['semester']}"),
               _buildInfoRow("Pekerjaan", data['pekerjaan']),
               _buildInfoRow("Jumlah Jam", "${data['jumlah_jam']}"),
               SizedBox(height: 24),
@@ -92,11 +153,17 @@ class PrintLetterScreen extends StatelessWidget {
                     Text("Scan QR Code untuk validasi:",
                         style: TextStyle(fontSize: 12)),
                     SizedBox(height: 8),
-                    Icon(
-                      Icons.qr_code_2,
-                      size: 150,
-                      color: Colors.black87,
-                    ),
+                    data['qrCode'] != null && data['qrCode'] != ''
+                        ? Image.memory(
+                            base64Decode(data['qrCode']),
+                            width: 150,
+                            height: 150,
+                          )
+                        : Icon(
+                            Icons.qr_code_2,
+                            size: 150,
+                            color: Colors.black87,
+                          ),
                     SizedBox(height: 8),
                     Text(
                       "NB: Form ini wajib disimpan untuk kepentingan bebas tanggungan.",
@@ -117,9 +184,7 @@ class PrintLetterScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: () {
-                    _printForm(context);
-                  },
+                  onPressed: _printForm,
                   child: Text(
                     "Cetak Surat",
                     style: TextStyle(fontSize: 18),
@@ -179,100 +244,103 @@ class PrintLetterScreen extends StatelessWidget {
     );
   }
 
-  void _printForm(BuildContext context) {
-    final pdf = pw.Document();
+void _printForm() {
+  final pdf = pw.Document();
 
-    pdf.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Center(
-                child: pw.Column(
-                  children: [
-                    pw.Text(
-                      "KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET, DAN TEKNOLOGI",
-                      style: pw.TextStyle(
-                          fontSize: 12, fontWeight: pw.FontWeight.bold),
-                      textAlign: pw.TextAlign.center,
-                    ),
-                    pw.SizedBox(height: 4),
-                    pw.Text(
-                      "POLITEKNIK NEGERI MALANG",
-                      style: pw.TextStyle(
-                          fontSize: 16, fontWeight: pw.FontWeight.bold),
-                      textAlign: pw.TextAlign.center,
-                    ),
-                    pw.SizedBox(height: 4),
-                    pw.Text(
-                      "JL. Soekarno-Hatta No. 9 Malang 65141 Telepon (0341) 404424 Pes. 101-105, 0341-404420, Fax. (0341) 404420",
-                      style: pw.TextStyle(fontSize: 10),
-                      textAlign: pw.TextAlign.center,
-                    ),
-                    pw.SizedBox(height: 16),
-                    pw.Text(
-                      "BERITA ACARA KOMPENSASI PRESENSI",
-                      style: pw.TextStyle(
-                        fontSize: 16,
-                        fontWeight: pw.FontWeight.bold,
-                        decoration: pw.TextDecoration.underline,
-                      ),
-                      textAlign: pw.TextAlign.center,
-                    ),
-                    pw.SizedBox(height: 24),
-                  ],
-                ),
-              ),
-              _buildPdfInfoRow("Nama Pemberi Pekerjaan", data['pemberi_tugas']),
-              _buildPdfInfoRow("NIP", data['nip_pemberi']),
-              _buildPdfInfoRow("Nama Mahasiswa", data['nama_mahasiswa']),
-              _buildPdfInfoRow("NIM", data['nim']),
-              _buildPdfInfoRow("Semester", data['semester']),
-              _buildPdfInfoRow("Pekerjaan", data['pekerjaan']),
-              _buildPdfInfoRow("Jumlah Jam", "${data['jumlah_jam']}"),
-              pw.SizedBox(height: 24),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+  // Construct the QR code URL using the approval ID
+  String qrCodeUrl = 'https://kompen.kufoto.my.id/${widget.approvalId}/export_pdf';
+
+  pdf.addPage(
+    pw.Page(
+      pageFormat: PdfPageFormat.a4,
+      build: (pw.Context context) {
+        return pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Center(
+              child: pw.Column(
                 children: [
-                  _buildPdfTandaTangan("Ka Program Studi", data['nip_pemberi']),
-                  _buildPdfTandaTangan(
-                      "Yang Memberikan Rekomendasi", data['nip_pemberi']),
+                  pw.Text(
+                    "KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET, DAN TEKNOLOGI",
+                    style: pw.TextStyle(
+                        fontSize: 12, fontWeight: pw.FontWeight.bold),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    "POLITEKNIK NEGERI MALANG",
+                    style: pw.TextStyle(
+                        fontSize: 16, fontWeight: pw.FontWeight.bold),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    "JL. Soekarno-Hatta No. 9 Malang 65141 Telepon (0341) 404424 Pes. 101-105, 0341-404420, Fax. (0341) 404420",
+                    style: pw.TextStyle(fontSize: 10),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.SizedBox(height: 16),
+                  pw.Text(
+                    "BERITA ACARA KOMPENSASI PRESENSI",
+                    style: pw.TextStyle(
+                      fontSize: 16,
+                      fontWeight: pw.FontWeight.bold,
+                      decoration: pw.TextDecoration.underline,
+                    ),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  pw.SizedBox(height: 24),
                 ],
               ),
-              pw.SizedBox(height: 32),
-              pw.Center(
-                child: pw.Column(
-                  children: [
-                    pw.Text("Scan QR Code untuk validasi:",
-                        style: pw.TextStyle(fontSize: 12)),
-                    pw.SizedBox(height: 8),
-                    pw.BarcodeWidget(
-                      data: data['qrCode'],
-                      barcode: pw.Barcode.qrCode(),
-                      width: 150,
-                      height: 150,
-                    ),
-                    pw.SizedBox(height: 8),
-                    pw.Text(
-                      "NB: Form ini wajib disimpan untuk kepentingan bebas tanggungan.",
-                      style: pw.TextStyle(color: PdfColors.red, fontSize: 12),
-                      textAlign: pw.TextAlign.center,
-                    ),
-                  ],
-                ),
+            ),
+            _buildPdfInfoRow("Nama Pemberi Pekerjaan", data['pemberi_tugas']),
+            _buildPdfInfoRow("NIP", data['nip_pemberi']),
+            _buildPdfInfoRow("Nama Mahasiswa", data['nama_mahasiswa']),
+            _buildPdfInfoRow("NIM", data['nim']),
+            _buildPdfInfoRow("Semester", "${data['semester']}"),
+            _buildPdfInfoRow("Pekerjaan", data['pekerjaan']),
+            _buildPdfInfoRow("Jumlah Jam", "${data['jumlah_jam']}"),
+            pw.SizedBox(height: 24),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                _buildPdfTandaTangan("Ka Program Studi", data['nip_pemberi']),
+                _buildPdfTandaTangan(
+                    "Yang Memberikan Rekomendasi", data['nip_pemberi']),
+              ],
+            ),
+            pw.SizedBox(height: 32),
+            pw.Center(
+              child: pw.Column(
+                children: [
+                  pw.Text("Scan QR Code untuk validasi:",
+                      style: pw.TextStyle(fontSize: 12)),
+                  pw.SizedBox(height: 8),
+                  pw.BarcodeWidget(
+                    data: qrCodeUrl,
+                    barcode: pw.Barcode.qrCode(),
+                    width: 150,
+                    height: 150,
+                  ),
+                  pw.SizedBox(height: 8),
+                  pw.Text(
+                    "NB: Form ini wajib disimpan untuk kepentingan bebas tanggungan.",
+                    style: pw.TextStyle(color: PdfColors.red, fontSize: 12),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                ],
               ),
-            ],
-          );
-        },
-      ),
-    );
+            ),
+          ],
+        );
+      },
+    ),
+  );
 
-    Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
-    );
-  }
+  Printing.layoutPdf(
+    onLayout: (PdfPageFormat format) async => pdf.save(),
+  );
+}
 
   pw.Widget _buildPdfInfoRow(String title, String value) {
     return pw.Padding(

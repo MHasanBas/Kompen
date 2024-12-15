@@ -81,6 +81,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Helper method to truncate text
+  String _truncateText(String text, int maxLength) {
+    if (text.length <= maxLength) return text;
+    return '${text.substring(0, maxLength)}...';
+  }
+
   Future<void> updateStatus(int applyId, bool isApproved) async {
     try {
       String? authToken = await getAuthToken();
@@ -119,21 +125,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
- String formatName(String name) {
-    List<String> nameParts = name.split(' ');
-    if (nameParts.length > 2) {
-      return '${nameParts[0]}  ${nameParts[1]} ..';
-    }
-    return name;
-  }
-
-  String formatNidn(String nidn) {
-    if (nidn.length > 15) {
-      return '${nidn.substring(0, 15)}...';
-    }
-    return nidn;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,93 +156,101 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          CircleAvatar(
-                            radius: 35,
-                            backgroundColor: const Color(0xFF191970),
-                            child: const Icon(
-                              Icons.person,
-                              size: 40.0,
-                              color: Colors.white,
+                          Expanded(
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 35,
+                                  backgroundColor: const Color(0xFF191970),
+                                  child: const Icon(
+                                    Icons.person,
+                                    size: 40.0,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _truncateText(userName, 20),
+                                        softWrap: true,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.poppins(
+                                          textStyle: const TextStyle(
+                                            fontSize: 15.0,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        _truncateText(userNidn, 20),
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.poppins(
+                                          textStyle: const TextStyle(
+                                            fontSize: 13.0,
+                                            color: Color.fromARGB(255, 87, 86, 86),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => LihatTugasPage(),
+                                            ),
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF191970),
+                                        ),
+                                        child: const Text(
+                                          'Lihat Tugas',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          // QR code scanner button
                           Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                formatName(userName),
-                                style: GoogleFonts.poppins(
-                                  textStyle: const TextStyle(
-                                    fontSize: 15.0,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                              const SizedBox(height: 32),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 16.0),
+                                child: IconButton(
+                                  icon: const Icon(Icons.qr_code_scanner),
+                                  iconSize: 60.0,
+                                  color: const Color(0xFF191970),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => QRCodePage()),
+                                    );
+                                  },
                                 ),
                               ),
-                              Text(
-                                formatNidn(userNidn),
-                                style: GoogleFonts.poppins(
-                                  textStyle: const TextStyle(
-                                    fontSize: 13.0,
-                                    color: Color.fromARGB(255, 87, 86, 86),
-                                  ),
-                                ),
-                              ),
-                            const SizedBox(height: 10),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => LihatTugasPage(),
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF191970),
-                              ),
-                              child: const Text(
-                                'Lihat Tugas',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    // QR code scanner button
-                    Column(
-                      children: [
-                        const SizedBox(height: 32), // Add more space above the button
-                        Padding(
-                          padding: const EdgeInsets.only(right: 16.0), // Move button to the right
-                          child: IconButton(
-                            icon: const Icon(Icons.qr_code_scanner),
-                            iconSize: 70.0,
-                            color: const Color(0xFF191970),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => QRCodePage()),
-                              );
-                            },
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
-          ),
-        
-
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
@@ -330,7 +329,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           margin: const EdgeInsets.all(10),
                           child: ListTile(
                             contentPadding: const EdgeInsets.all(10),
-                            leading: const Icon(Icons.assignment, size: 50),
+                          leading: Image.asset(
+                            'assets/task.jpg', // Ganti path sesuai lokasi gambar di project
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          ),
+
                             title: Text(
                               tugas != null &&
                                       tugas.containsKey('tugas_nama') &&
@@ -450,4 +455,14 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
+}
+
+// Helper function to format long names (if needed elsewhere)
+String formatName(String name) {
+  return name.length > 20 ? '${name.substring(0, 20)}...' : name;
+}
+
+// Helper function to format NIDN (if needed elsewhere)
+String formatNidn(String nidn) {
+  return nidn.length > 20 ? '${nidn.substring(0, 20)}...' : nidn;
 }

@@ -182,7 +182,7 @@ class _LihatTugasPageState extends State<LihatTugasPage> {
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              'Dosen | ${tugas['pengajar'] ?? 'Unknown'}',
+                                              'Dosen | ${tugas['pembuat_tugas'] ?? 'unknown'}',
                                               style: const TextStyle(
                                                 fontSize: 14,
                                                 color: Colors.grey,
