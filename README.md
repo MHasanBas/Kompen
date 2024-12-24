@@ -68,7 +68,7 @@ Berikut adalah tampilan antarmuka pengguna dari sistem kompensasi:
 
 1. Clone repository:
    ```bash
-   git clone <URL_REPOSITORY_FLUTTER>
+   git clone https://github.com/MHasanBas/Kompen.git
    ```
 
 2. Masuk ke direktori proyek:
