@@ -6,7 +6,7 @@ Sistem ini dirancang menggunakan Flutter untuk antarmuka pengguna dan Laravel se
 
 Berikut adalah tampilan antarmuka pengguna dari sistem kompensasi:
 
-![Preview Sistem Kompensasi](img/preview.png)
+![Preview Sistem Kompensasi](img/video.gif)
 
 ---
 
@@ -42,6 +42,11 @@ Berikut adalah tampilan antarmuka pengguna dari sistem kompensasi:
    - Pengaturan periode akademik untuk kompensasi (contoh: 2024-Ganjil, 2024-Genap).
 
 ---
+## 🖼️ Screenshoot
+
+Berikut adalah tampilan antarmuka pengguna dari sistem kompensasi:
+
+![Preview Sistem Kompensasi](img/preview.png)
 
 ## 🛠️ Teknologi yang Digunakan
 
