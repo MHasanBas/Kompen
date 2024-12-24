@@ -248,7 +248,19 @@ void _printForm() {
   final pdf = pw.Document();
 
   // Construct the QR code URL using the approval ID
-  String qrCodeUrl = 'https://kompen.kufoto.my.id/${widget.approvalId}/export_pdf';
+ String qrCodeUrl = jsonEncode({
+  "approval_id": widget.approvalId,
+  "pemberi_tugas": "Muhammad Hasan Basri",
+  "nip_pemberi": "876543212638764334634",
+  "nama_mahasiswa": "M.Hasan Basri",
+  "nim": "2241760139",
+  "semester": 5,
+  "pekerjaan": "Membuat website untuk sistem manage data siswa",
+  "jumlah_jam": 8,
+  "tanggal": "15 December 2024"
+});
+
+
 
   pdf.addPage(
     pw.Page(

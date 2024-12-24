@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:http/http.dart' as http;
-import 'package:webview_flutter/webview_flutter.dart';
+import 'dart:convert'; // Untuk jsonDecode
 
 class QRCodePage extends StatefulWidget {
   @override
@@ -25,6 +24,7 @@ class _QRCodePageState extends State<QRCodePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Scan QR Code'),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Column(
         children: <Widget>[
@@ -34,7 +34,7 @@ class _QRCodePageState extends State<QRCodePage> {
               key: qrKey,
               onQRViewCreated: _onQRViewCreated,
               overlay: QrScannerOverlayShape(
-                borderColor: Colors.red,
+                borderColor: Colors.blueAccent,
                 borderRadius: 10,
                 borderLength: 30,
                 borderWidth: 10,
@@ -48,16 +48,20 @@ class _QRCodePageState extends State<QRCodePage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (qrText != null) 
-                    Text('Data: $qrText'),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (qrText != null) {
+                  if (qrText != null)
+                    ElevatedButton(
+                      onPressed: () {
                         _handleQRCode(qrText!);
-                      }
-                    },
-                    child: Text('Open Link'),
-                  ),
+                      },
+                      child: Text('Tampilkan Form Kompensasi'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -71,31 +75,103 @@ class _QRCodePageState extends State<QRCodePage> {
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
       setState(() {
-        qrText = scanData.code; // Save scanned data
+        qrText = scanData.code;
       });
+      if (scanData.code != null) {
+        _handleQRCode(scanData.code!);
+      }
     });
   }
 
-  void _handleQRCode(String data) async {
+  void _handleQRCode(String data) {
     try {
-      final Uri uri = Uri.tryParse(data) ?? Uri();
-      if (uri.isAbsolute) {
-        // Check if the URL is reachable
-        final response = await http.head(uri);
-        if (response.statusCode == 200) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => WebViewPage(url: data)),
-          );
-        } else {
-          _showErrorDialog('URL is not reachable.');
-        }
-      } else {
-        _showErrorDialog('Scanned data is not a valid URL.');
-      }
+      final decodedData = jsonDecode(data);
+      _showFormKompensasi(decodedData);
     } catch (e) {
-      _showErrorDialog('An error occurred while trying to open the URL.');
+      _showErrorDialog('Scanned data is not a valid JSON.');
     }
+  }
+
+  void _showFormKompensasi(Map<String, dynamic> jsonData) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Form Kompensasi',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Divider(color: Colors.grey),
+                  _buildFormRow('Approval ID', jsonData['approval_id']),
+                  _buildFormRow('Pemberi Tugas', jsonData['pemberi_tugas']),
+                  _buildFormRow('NIP Pemberi', jsonData['nip_pemberi']),
+                  _buildFormRow('Nama Mahasiswa', jsonData['nama_mahasiswa']),
+                  _buildFormRow('NIM', jsonData['nim']),
+                  _buildFormRow('Semester', jsonData['semester']),
+                  _buildFormRow('Pekerjaan', jsonData['pekerjaan']),
+                  _buildFormRow('Jumlah Jam', '${jsonData['jumlah_jam']} Jam'),
+                  _buildFormRow('Tanggal', jsonData['tanggal']),
+                  SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: Icon(Icons.check_circle_outline),
+                    label: Text('Selesai'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFormRow(String label, dynamic value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.blueGrey,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value.toString(),
+              style: TextStyle(fontSize: 16, color: Colors.black87),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showErrorDialog(String message) {
@@ -103,11 +179,15 @@ class _QRCodePageState extends State<QRCodePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Error'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: Text(
+            'Error',
+            style: TextStyle(color: Colors.redAccent),
+          ),
           content: Text(message),
           actions: [
             TextButton(
-              child: Text('OK'),
+              child: Text('OK', style: TextStyle(color: Colors.blueAccent)),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -122,24 +202,5 @@ class _QRCodePageState extends State<QRCodePage> {
   void dispose() {
     controller?.dispose();
     super.dispose();
-  }
-}
-
-class WebViewPage extends StatelessWidget {
-  final String url;
-
-  WebViewPage({required this.url});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('WebView'),
-      ),
-      body: WebView(
-        initialUrl: url,
-        javascriptMode: JavascriptMode.unrestricted,
-      ),
-    );
   }
 }

@@ -176,6 +176,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     );
   }
 
+  
+
   void showConfirmationDialog() {
     showDialog(
       context: context,
@@ -317,14 +319,17 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 4),
+                         const SizedBox(height: 4),
                           Text(
-                            taskDetail["tugas_tipe"] ?? "Tipe tidak tersedia",
-                            style: const TextStyle(
+                            taskDetail["tugas_tipe"] ?? "Tipe tidak tersedia", // Menampilkan teks sesuai dengan tugas tipe
+                            style: TextStyle(
                               fontSize: 14,
-                              color: Colors.red,
+                              color: taskDetail["tugas_tipe"] == "online" 
+                                  ? Colors.green  // Jika "online", warna hijau
+                                  : Colors.red,   // Jika "offline", warna merah
                             ),
                           ),
+
                           SizedBox(height: 8),
                           Text(
                             "By " + (taskDetail["pembuat_tugas"] ?? "Unknown"),
@@ -343,6 +348,40 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 16),
+                           const SizedBox(height: 16),
+                          // New Competencies Section
+                          if (taskDetail["kompetensi"] != null && 
+                              taskDetail["kompetensi"] is List && 
+                              taskDetail["kompetensi"].isNotEmpty)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Kompetensi yang Dibutuhkan:',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.indigo[900],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: (taskDetail["kompetensi"] as List)
+                                      .map((competency) => Chip(
+                                            label: Text(competency),
+                                            backgroundColor: Colors.blue[50],
+                                            labelStyle: TextStyle(
+                                              color: Colors.indigo[900],
+                                              fontSize: 12,
+                                            ),
+                                          ))
+                                      .toList(),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                            ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -356,6 +395,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                   ),
                                 ],
                               ),
+                              
                               Row(
                                 children: [
                                   const Icon(Icons.arrow_downward, color: Colors.red),
@@ -365,6 +405,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                     style: const TextStyle(fontSize: 14, color: Colors.red),
                                   ),
                                 ],
+                                
                               ),
                             ],
                           ),
@@ -372,6 +413,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       ),
                     ),
                   ),
+                  
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: showConfirmationDialog,

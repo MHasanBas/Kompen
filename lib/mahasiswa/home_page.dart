@@ -293,18 +293,26 @@ Expanded(
       final item = tugas[index];
       return GestureDetector(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TaskDetailScreen(
-                taskId: item['taskId'],  // Menggunakan taskId dari item
-              ),
-            ),
-          );
-        },
+  // Pastikan taskId ada dan dapat dikonversi ke int
+  int taskId = item['tugas_id'] is int 
+      ? item['tugas_id'] // Jika taskId sudah bertipe int
+      : int.tryParse(item['tugas_id'].toString()) ?? 0; // Konversi ke int jika taskId berupa string
+  
+   // Pastikan taskId valid
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TaskDetailScreen(
+          taskId: taskId,  // Kirim taskId yang sudah pasti bertipe int
+        ),
+      ),
+    );
+ 
+},
+
         child: KompenCard(
           title: item['tugas_nama'] ?? "Tidak ada nama",
-          hours: "${item['tugas_jam_kompen'] ?? 0} Jam",
+          hours: " - ${item['tugas_jam_kompen'] ?? 0} Jam",
           description: item['tugas_deskripsi'] ?? "Deskripsi kosong",
           icon: Icons.task,
         ),
