@@ -2,7 +2,7 @@
 
 Sistem ini dirancang menggunakan Flutter untuk antarmuka pengguna dan Laravel sebagai REST API backend. Sistem bertujuan untuk mengelola proses kompensasi mahasiswa secara efisien dan terintegrasi di Jurusan Teknologi Informasi.
 
-## 🖼️ preview
+## 🖼️ preview Demo
 
 Berikut adalah tampilan antarmuka pengguna dari sistem kompensasi:
 
